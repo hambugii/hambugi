@@ -74,7 +74,7 @@
         android:textSize="16sp"
         android:textColor="#FFFFFF"
         android:textStyle="bold"
-        android:background="@drawable/button"
+        android:backgroundTint="#9099B8"
         android:layout_marginBottom="16dp" />
 
     <!-- 회원가입 텍스트 -->
