@@ -24,6 +24,7 @@
         <!--        <activity android:name=".StartActivity" />-->
         <activity android:name=".SignUpActivity" />
         <activity android:name=".SignUpSuccessActivity" />
+        <activity android:name=".MainActivity" />
     </application>
 
 </manifest>
