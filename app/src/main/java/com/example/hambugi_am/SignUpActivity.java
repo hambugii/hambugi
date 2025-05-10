@@ -35,12 +35,11 @@ public class SignUpActivity extends AppCompatActivity {
 
         dbHelper = new DBHelper(this);
 
-        // 뒤로 가기 버튼
-        backToStart.setOnClickListener(v -> {
-            Intent intent = new Intent(SignUpActivity.this, StartActivity.class);
-            startActivity(intent);
-            finish();
-        });
+        // 돌아가기 버튼
+        // 돌아가기 TextView 찾기
+        TextView backButton = findViewById(R.id.back_to_start);
+        // 현재 액티비티 종료
+        backButton.setOnClickListener(v -> finish());
 
         // 아이디 중복확인
         btnCheckId.setOnClickListener(v -> {
