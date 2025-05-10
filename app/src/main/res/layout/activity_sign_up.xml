@@ -2,54 +2,54 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#FFFFFF"
     android:orientation="vertical"
-    android:padding="32dp"
-    android:background="#FFFFFF">
+    android:padding="32dp">
 
     <!-- 돌아가기 -->
     <TextView
-        android:id="@+id/backButton"
+        android:id="@+id/back_to_start"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="20dp"
         android:text="&lt;"
-        android:textSize="30sp"
         android:textColor="#4F7DF9"
-        android:layout_marginBottom="20dp" />
+        android:textSize="30sp" />
 
     <!-- 제목 -->
     <TextView
         android:id="@+id/signupTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="회원가입"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        android:textColor="#333333"
         android:layout_gravity="center_horizontal"
-        android:layout_marginBottom="36dp" />
+        android:layout_marginBottom="36dp"
+        android:text="회원가입"
+        android:textColor="#333333"
+        android:textSize="28sp"
+        android:textStyle="bold" />
 
     <!-- 아이디 + 중복확인 버튼 -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
         android:text="아이디"
         android:textColor="#333333"
-        android:textSize="16sp"
-        android:layout_marginBottom="8dp" />
+        android:textSize="16sp" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="24dp">
+        android:layout_marginBottom="24dp"
+        android:orientation="horizontal">
 
         <EditText
             android:id="@+id/inputSignUpId"
             android:layout_width="0dp"
-            android:layout_weight="1"
             android:layout_height="wrap_content"
-            android:hint="영문, 숫자 5자 이상"
+            android:layout_weight="1"
             android:background="@drawable/edittext_background"
+            android:hint="영문, 숫자 5자 이상"
             android:padding="12dp"
             android:textColor="#333333"
             android:textColorHint="#999999" />
@@ -58,84 +58,84 @@
             android:id="@+id/btnCheckId"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:backgroundTint="#9099B8"
             android:text="중복확인"
             android:textColor="#FFFFFF"
-            android:textSize="14sp"
-            android:layout_marginStart="8dp"
-            android:backgroundTint="#9099B8" />
+            android:textSize="14sp" />
     </LinearLayout>
 
     <!-- 비밀번호 -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
         android:text="비밀번호"
         android:textColor="#333333"
-        android:textSize="16sp"
-        android:layout_marginBottom="8dp" />
+        android:textSize="16sp" />
 
     <EditText
         android:id="@+id/inputPassword"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:background="@drawable/edittext_background"
         android:hint="영문, 숫자 8자 이상"
         android:inputType="textPassword"
-        android:background="@drawable/edittext_background"
         android:padding="12dp"
         android:textColor="#333333"
-        android:textColorHint="#999999"
-        android:layout_marginBottom="24dp" />
+        android:textColorHint="#999999" />
 
     <!-- 비밀번호 확인 -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
         android:text="비밀번호 확인"
         android:textColor="#333333"
-        android:textSize="16sp"
-        android:layout_marginBottom="8dp" />
+        android:textSize="16sp" />
 
     <EditText
         android:id="@+id/inputPasswordCheck"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:background="@drawable/edittext_background"
         android:hint="비밀번호 재입력"
         android:inputType="textPassword"
-        android:background="@drawable/edittext_background"
         android:padding="12dp"
         android:textColor="#333333"
-        android:textColorHint="#999999"
-        android:layout_marginBottom="24dp" />
+        android:textColorHint="#999999" />
 
     <!-- 이름 -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
         android:text="이름"
         android:textColor="#333333"
-        android:textSize="16sp"
-        android:layout_marginBottom="8dp" />
+        android:textSize="16sp" />
 
     <EditText
         android:id="@+id/inputName"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="이름을 입력하세요"
+        android:layout_marginBottom="36dp"
         android:background="@drawable/edittext_background"
+        android:hint="이름을 입력하세요"
         android:padding="12dp"
         android:textColor="#333333"
-        android:textColorHint="#999999"
-        android:layout_marginBottom="36dp" />
+        android:textColorHint="#999999" />
 
     <!-- 회원가입 버튼 -->
     <Button
         android:id="@+id/btnSignUp"
         android:layout_width="126dp"
         android:layout_height="48dp"
-        android:text="회원가입"
-        android:textSize="16sp"
-        android:textColor="#FFFFFF"
-        android:textStyle="bold"
+        android:layout_gravity="center_horizontal"
         android:backgroundTint="#9099B8"
-        android:layout_gravity="center_horizontal" />
+        android:text="회원가입"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:textStyle="bold" />
 </LinearLayout>

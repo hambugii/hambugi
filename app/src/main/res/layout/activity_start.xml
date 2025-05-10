@@ -2,9 +2,9 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:gravity="center"
     android:background="#FFFFFF"
+    android:gravity="center"
+    android:orientation="vertical"
     android:padding="24dp">
 
     <!-- 로고 -->
@@ -12,70 +12,72 @@
         android:id="@+id/logoImage"
         android:layout_width="100dp"
         android:layout_height="100dp"
-        android:src="@drawable/logo"
         android:layout_marginBottom="24dp"
-        android:contentDescription="학교 로고" />
+        android:contentDescription="학교 로고"
+        android:src="@drawable/logo" />
 
     <!-- 앱 이름 -->
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
         android:text="햄부기 출결관리"
         android:textColor="#333333"
         android:textSize="24sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="32dp" />
+        android:textStyle="bold" />
 
     <!-- 아이디 -->
     <TextView
         android:layout_width="260dp"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
         android:text="아이디"
         android:textColor="#333333"
-        android:textSize="14sp"
-        android:layout_marginBottom="4dp" />
+        android:textSize="14sp" />
+
     <EditText
         android:id="@+id/inputId"
         android:layout_width="260dp"
         android:layout_height="50dp"
-        android:hint="ID"
+        android:layout_marginBottom="16dp"
         android:background="@drawable/edittext_background"
+        android:hint="ID"
         android:padding="10dp"
         android:textColor="#333333"
-        android:textColorHint="#999999"
-        android:layout_marginBottom="16dp" />
+        android:textColorHint="#999999" />
 
     <!-- 비밀번호 -->
     <TextView
         android:layout_width="260dp"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
         android:text="비밀번호"
         android:textColor="#333333"
-        android:textSize="14sp"
-        android:layout_marginBottom="4dp" />
+        android:textSize="14sp" />
+
     <EditText
         android:id="@+id/inputPassword"
         android:layout_width="260dp"
         android:layout_height="50dp"
+        android:layout_marginBottom="28dp"
+        android:background="@drawable/edittext_background"
         android:hint="Password"
         android:inputType="textPassword"
-        android:background="@drawable/edittext_background"
         android:padding="10dp"
         android:textColor="#333333"
-        android:textColorHint="#999999"
-        android:layout_marginBottom="28dp" />
+        android:textColorHint="#999999" />
 
     <!-- 로그인 버튼 -->
     <Button
         android:id="@+id/btnSignIn"
         android:layout_width="126dp"
         android:layout_height="48dp"
-        android:text="로그인"
-        android:textSize="16sp"
-        android:textColor="#FFFFFF"
-        android:textStyle="bold"
+        android:layout_marginBottom="16dp"
         android:backgroundTint="#9099B8"
-        android:layout_marginBottom="16dp" />
+        android:text="로그인"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:textStyle="bold" />
 
     <!-- 회원가입 텍스트 -->
     <TextView
