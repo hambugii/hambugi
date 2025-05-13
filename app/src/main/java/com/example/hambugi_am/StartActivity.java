@@ -1,6 +1,7 @@
 package com.example.hambugi_am;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -21,6 +22,18 @@ public class StartActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        // 로그인 상태 확인 (세션 유지용)
+        SharedPreferences prefs = getSharedPreferences("login_session", MODE_PRIVATE);
+        String userId = prefs.getString("user_id", null);
+        if (userId != null) {
+            // 이미 로그인 되어 있음
+            Intent intent = new Intent(StartActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
+
         setContentView(R.layout.activity_start);  // 로그인 화면 레이아웃
 
         // 뷰 연결
@@ -50,6 +63,11 @@ public class StartActivity extends AppCompatActivity {
             if (cursor.moveToFirst()) {
                 Toast.makeText(StartActivity.this, "로그인 성공!", Toast.LENGTH_SHORT).show();
 
+                // 로그인 세션 저장
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.putString("user_id", id);
+                editor.apply();
+
                 // 로그인 성공 후 이동할 화면
                 Intent intent = new Intent(StartActivity.this, MainActivity.class);
                 startActivity(intent);
@@ -69,5 +87,7 @@ public class StartActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
+
+
     }
 }

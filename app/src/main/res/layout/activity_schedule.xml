@@ -440,5 +440,13 @@
                 android:padding="8dp"/>
         </TableRow>
     </TableLayout>
+    <TextView
+        android:id="@+id/tv_today_day"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="오늘은 ?요일입니다"
+        android:textSize="18sp"
+        android:layout_marginTop="16dp"
+        android:layout_gravity="left" />
 
 </LinearLayout>
