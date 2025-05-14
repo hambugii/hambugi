@@ -16,6 +16,23 @@
         android:textStyle="bold"
         android:gravity="center"/>
 
+    <!-- 로그아웃 버튼 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="end"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp">
+
+        <Button
+            android:id="@+id/logout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="로그아웃"
+            android:backgroundTint="#9099B8"
+            android:textColor="#FFFFFF" />
+    </LinearLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -40,7 +57,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="추가/수정"
-            android:backgroundTint="#9099B8"
+            android:backgroundTint="#9999B8"
             android:textColor="#FFFFFF"/>
     </LinearLayout>
 

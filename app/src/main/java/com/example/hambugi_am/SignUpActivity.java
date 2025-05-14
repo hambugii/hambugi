@@ -46,7 +46,7 @@ public class SignUpActivity extends AppCompatActivity {
             String id = inputId.getText().toString().trim();
 
             if (!isValidId(id)) {
-                Toast.makeText(this, "아이디는 6자 이상, 영문+숫자 포함해야 합니다.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "아이디는 5자 이상, 영문+숫자 포함해야 합니다.", Toast.LENGTH_SHORT).show();
                 isIdChecked = false;
                 return;
             }
@@ -77,7 +77,7 @@ public class SignUpActivity extends AppCompatActivity {
             }
 
             if (!isValidId(id)) {
-                Toast.makeText(this, "아이디는 6자 이상, 영문+숫자 포함해야 합니다.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "아이디는 5자 이상, 영문+숫자 포함해야 합니다.", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -115,9 +115,9 @@ public class SignUpActivity extends AppCompatActivity {
         });
     }
 
-    // 아이디 유효성 검사: 영문+숫자 포함, 6자 이상
+    // 아이디 유효성 검사: 영문+숫자 포함, 5자 이상
     public boolean isValidId(String id) {
-        return id.matches("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{6,}$");
+        return id.matches("^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]{5,}$");
     }
 
     // 비밀번호 유효성 검사: 영문+숫자 포함, 8자 이상
