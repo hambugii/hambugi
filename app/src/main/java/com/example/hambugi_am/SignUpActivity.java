@@ -35,7 +35,6 @@ public class SignUpActivity extends AppCompatActivity {
 
         dbHelper = new DBHelper(this);
 
-        // 돌아가기 버튼
         // 돌아가기 TextView 찾기
         TextView backButton = findViewById(R.id.back_to_start);
         // 현재 액티비티 종료

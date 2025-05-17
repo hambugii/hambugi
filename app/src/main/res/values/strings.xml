@@ -8,4 +8,15 @@
         <item>2025년 1학기</item>
         <item>2025년 2학기</item>
     </string-array>
+
+    <string-array name="day_array">
+        <item>월요일</item>
+        <item>화요일</item>
+        <item>수요일</item>
+        <item>목요일</item>
+        <item>금요일</item>
+        <item>토요일</item>
+        <item>일요일</item>
+    </string-array>
+
 </resources>
