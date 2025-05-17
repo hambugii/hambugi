@@ -29,8 +29,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:minHeight="48dp"
-            android:contentDescription="@string/year_selection" />
+            android:minHeight="48dp" />
 
         <!-- 월 선택 스피너 -->
         <Spinner
@@ -38,8 +37,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:minHeight="48dp"
-            android:contentDescription="@string/month_selection" />
+            android:minHeight="48dp" />
     </LinearLayout>
 
     <!-- 캘린더 표시 영역 -->
@@ -47,8 +45,7 @@
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:contentDescription="@string/calendar_scroll_area">
+        android:layout_weight="1">
 
         <!-- 캘린더 테이블 레이아웃 -->
         <TableLayout
@@ -57,5 +54,42 @@
             android:layout_height="wrap_content"
             android:stretchColumns="*" />
     </ScrollView>
+
+    <!-- 하단 메뉴바 -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:background="#FFFFFF"
+        android:layout_marginBottom="20dp"
+        android:layout_alignParentBottom="true">
+
+        <ImageButton
+            android:id="@+id/btn_main"
+            android:layout_weight="1"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/main_off"
+            android:background="@color/white"
+            android:contentDescription="메인" />
+
+        <ImageButton
+            android:id="@+id/btn_calendar"
+            android:layout_weight="1"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/calender_on"
+            android:background="@color/white"
+            android:contentDescription="캘린더" />
+
+        <ImageButton
+            android:id="@+id/btn_alarm"
+            android:layout_weight="1"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:src="@drawable/alarm_off"
+            android:background="@color/white"
+            android:contentDescription="알람" />
+    </LinearLayout>
 
 </LinearLayout>

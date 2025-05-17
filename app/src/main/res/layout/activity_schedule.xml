@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-        <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="#FFFFFF"
@@ -508,9 +508,8 @@
                     style="?android:attr/progressBarStyleHorizontal"
                     android:layout_width="match_parent"
                     android:layout_height="30dp"
-                    android:layout_centerInParent="true"
-                    android:progress="80"
                     android:max="100"
+                    android:progress="80"
                     android:progressDrawable="@drawable/progress_attendance_custom" />
 
                 <!-- 왼쪽 문구 -->
@@ -552,7 +551,7 @@
                 android:layout_weight="1"
                 android:layout_width="50dp"
                 android:layout_height="50dp"
-                android:src="@drawable/main"
+                android:src="@drawable/main_on"
                 android:background="@color/white"
                 android:contentDescription="메인" />
 

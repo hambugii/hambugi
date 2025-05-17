@@ -1,5 +1,6 @@
 package com.example.hambugi_am;
 
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.Bundle;
@@ -8,6 +9,8 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TableLayout;
 import android.widget.TableRow;
@@ -35,6 +38,7 @@ public class CalenderActivity extends AppCompatActivity {
         calendarTable = findViewById(R.id.calendarTable);
         yearSpinner = findViewById(R.id.yearSpinner);
         monthSpinner = findViewById(R.id.monthSpinner);
+
 
         setupSpinners(); // 연도 및 월 스피너 초기화 및 현재 날짜로 설정
 
@@ -237,5 +241,15 @@ public class CalenderActivity extends AppCompatActivity {
             }
             addRowWithDivider(row); // 마지막 행에 가로줄 추가
         }
+
+        // 메인 버튼 연결
+        ImageButton btnMain = findViewById(R.id.btn_main);
+        btnMain.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(CalenderActivity.this, MainActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 }

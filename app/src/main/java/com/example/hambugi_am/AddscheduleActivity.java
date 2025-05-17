@@ -29,6 +29,11 @@ public class AddscheduleActivity extends AppCompatActivity {
         textEndTime = findViewById(R.id.textEndTime);
         buttonConfirm = findViewById(R.id.buttonConfirm);
 
+
+        TextView backButton = findViewById(R.id.back_to_start);
+        // 현재 액티비티 종료
+        backButton.setOnClickListener(v -> finish());
+
         // 스피너에 요일 데이터 추가
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.day_array, android.R.layout.simple_spinner_item);

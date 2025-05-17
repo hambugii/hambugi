@@ -11,6 +11,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -78,6 +79,27 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onNothingSelected(AdapterView<?> parentView) {
                 // 아무것도 선택되지 않았을 때 처리
+            }
+        });
+
+        // 추가 버튼 연결
+        Button btnEdit = findViewById(R.id.btn_edit);
+        btnEdit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, AddscheduleActivity.class);
+                startActivity(intent);
+            }
+        });
+
+
+        // 캘린더 버튼 연결
+        ImageButton btnCalendar= findViewById(R.id.btn_calendar);
+        btnCalendar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent(MainActivity.this, CalenderActivity.class);
+                startActivity(intent);
             }
         });
 
