@@ -21,9 +21,13 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <!--        <activity android:name=".StartActivity" />-->
         <activity android:name=".SignUpActivity" />
         <activity android:name=".SignUpSuccessActivity" />
+        <activity android:name=".MainActivity" />
+        <activity android:name=".AddscheduleActivity"/>
+        <activity android:name=".CalenderActivity"/>
+        <activity android:name=".AttendCheckActivity" />
+
     </application>
 
 </manifest>
