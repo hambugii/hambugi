@@ -108,20 +108,8 @@ public class CalenderActivity extends AppCompatActivity {
             dayView.setText(day);
             dayView.setGravity(Gravity.CENTER);
             dayView.setTextSize(TypedValue.COMPLEX_UNIT_SP, 14);
-            dayView.setTypeface(null, Typeface.BOLD);
             dayView.setPadding(8, 8, 8, 8);
-
-            switch (day) {
-                case "일":
-                    dayView.setTextColor(Color.RED);
-                    break;
-                case "토":
-                    dayView.setTextColor(Color.BLUE);
-                    break;
-                default:
-                    dayView.setTextColor(Color.BLACK);
-                    break;
-            }
+            dayView.setTextColor(Color.parseColor("#797979"));
 
             weekDaysRow.addView(dayView, new TableRow.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
         }
@@ -189,9 +177,9 @@ public class CalenderActivity extends AppCompatActivity {
             dateView.setTag(dateKey);
 
             int dayOfWeek = (firstDayOfWeek + day - 1) % 7;
-            if (dayOfWeek == 0) dateView.setTextColor(Color.RED);
-            else if (dayOfWeek == 6) dateView.setTextColor(Color.BLUE);
-            else dateView.setTextColor(Color.BLACK);
+            if (dayOfWeek == 0) dateView.setTextColor(Color.parseColor("#FF6363")); // 일요일
+            else if (dayOfWeek == 6) dateView.setTextColor(Color.parseColor("#678AFF")); // 토요일
+            else dateView.setTextColor(Color.parseColor("#797979")); // 평일
 
             dateView.setOnClickListener(new View.OnClickListener() {
                 @Override
