@@ -24,8 +24,9 @@
         <activity android:name=".SignUpActivity" />
         <activity android:name=".SignUpSuccessActivity" />
         <activity android:name=".MainActivity" />
-        <activity android:name=".CalenderActivity"/>
         <activity android:name=".AddscheduleActivity"/>
+        <activity android:name=".CalenderActivity"/>
+        <activity android:name=".AttendCheckActivity" />
 
     </application>
 

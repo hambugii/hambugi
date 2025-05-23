@@ -40,20 +40,13 @@
             android:minHeight="48dp" />
     </LinearLayout>
 
-    <!-- 캘린더 표시 영역 -->
-    <ScrollView
-        android:id="@+id/scrollView"
+    <!-- 캘린더 표시 영역 (스크롤뷰 제거) -->
+    <TableLayout
+        android:id="@+id/calendarTable"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
-
-        <!-- 캘린더 테이블 레이아웃 -->
-        <TableLayout
-            android:id="@+id/calendarTable"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:stretchColumns="*" />
-    </ScrollView>
+        android:layout_weight="1"
+        android:stretchColumns="*" />
 
     <!-- 하단 메뉴바 -->
     <LinearLayout

@@ -9,7 +9,6 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.Spinner;
 import android.widget.TableLayout;
@@ -39,7 +38,6 @@ public class CalenderActivity extends AppCompatActivity {
         yearSpinner = findViewById(R.id.yearSpinner);
         monthSpinner = findViewById(R.id.monthSpinner);
 
-
         setupSpinners(); // 연도 및 월 스피너 초기화 및 현재 날짜로 설정
 
         yearSpinner.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
@@ -67,13 +65,12 @@ public class CalenderActivity extends AppCompatActivity {
         addDateRows(); // 초기 달력 날짜 그림
     }
 
-    // 연도 및 월 스피너 설정
     private void setupSpinners() {
         int currentYear = Calendar.getInstance().get(Calendar.YEAR);
         int currentMonth = Calendar.getInstance().get(Calendar.MONTH) + 1;
 
         List<String> yearList = new ArrayList<>();
-        for (int year = 2000; year <= currentYear + 5; year++) {
+        for (int year = 2000; year <= currentYear; year++) {
             yearList.add(year + "년");
         }
 
@@ -90,7 +87,6 @@ public class CalenderActivity extends AppCompatActivity {
         monthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         monthSpinner.setAdapter(monthAdapter);
 
-        // 현재 연도와 월을 스피너에 설정
         int yearPosition = yearList.indexOf(currentYear + "년");
         if (yearPosition == -1 && !yearList.isEmpty()) {
             yearSpinner.setSelection(0);
@@ -100,7 +96,6 @@ public class CalenderActivity extends AppCompatActivity {
         monthSpinner.setSelection(currentMonth - 1);
     }
 
-    // 요일 (일, 월, 화...) 행 추가
     private void addWeekDaysRow() {
         TableRow weekDaysRow = new TableRow(this);
         weekDaysRow.setLayoutParams(new TableLayout.LayoutParams(
@@ -120,7 +115,6 @@ public class CalenderActivity extends AppCompatActivity {
         }
         calendarTable.addView(weekDaysRow);
 
-        // 요일 행 아래에 구분선 추가
         View divider = new View(this);
         TableLayout.LayoutParams params = new TableLayout.LayoutParams(
                 TableLayout.LayoutParams.MATCH_PARENT, 2);
@@ -129,7 +123,6 @@ public class CalenderActivity extends AppCompatActivity {
         calendarTable.addView(divider);
     }
 
-    // 날짜 행 아래에 구분선 추가 (가로줄 생성)
     private void addRowWithDivider(TableRow row) {
         if (row.getChildCount() > 0) {
             calendarTable.addView(row);
@@ -142,7 +135,6 @@ public class CalenderActivity extends AppCompatActivity {
         }
     }
 
-    // 달력의 날짜들을 생성하고 테이블에 추가
     private void addDateRows() {
         if (selectedDateView != null) {
             selectedDateView.setBackgroundColor(Color.TRANSPARENT);
@@ -152,21 +144,19 @@ public class CalenderActivity extends AppCompatActivity {
         calendarTable.removeAllViews();
         addWeekDaysRow();
 
-        // 스피너에서 선택된 연도와 월을 가져옴
         int selectedYear = Integer.parseInt(yearSpinner.getSelectedItem().toString().replace("년", ""));
-        int selectedMonth0Based = monthSpinner.getSelectedItemPosition(); // 0-based (0: 1월, 11: 12월)
+        int selectedMonth0Based = monthSpinner.getSelectedItemPosition();
 
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.YEAR, selectedYear);
         calendar.set(Calendar.MONTH, selectedMonth0Based);
         calendar.set(Calendar.DAY_OF_MONTH, 1);
 
-        int firstDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1; // 해당 월의 첫 번째 날짜의 요일 (0: 일요일, 6: 토요일)
-        int daysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH); // 해당 월의 총 일수
+        int firstDayOfWeek = calendar.get(Calendar.DAY_OF_WEEK) - 1;
+        int daysInMonth = calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
 
         TableRow row = new TableRow(this);
 
-        // 첫 번째 주 빈칸 채우기
         for (int i = 0; i < firstDayOfWeek; i++) {
             TextView emptyView = new TextView(this);
             emptyView.setText("");
@@ -175,7 +165,6 @@ public class CalenderActivity extends AppCompatActivity {
             row.addView(emptyView);
         }
 
-        // 날짜 셀 생성 및 추가
         for (int day = 1; day <= daysInMonth; day++) {
             final TextView dateView = new TextView(this);
             dateView.setText(String.valueOf(day));
@@ -202,14 +191,18 @@ public class CalenderActivity extends AppCompatActivity {
                     }
                     clickedCell.setBackgroundColor(Color.LTGRAY);
                     selectedDateView = clickedCell;
+
+                    // 여기에 날짜 클릭 시 출결 입력 화면으로 이동하는 코드 추가
+                    Intent intent = new Intent(CalenderActivity.this, AttendCheckActivity.class);
+                    intent.putExtra("selectedDate", dateKey);
+                    startActivity(intent);
                 }
             });
 
             row.addView(dateView);
 
-            // 토요일이면 다음 행으로 넘어가거나 마지막 날짜면 행 추가
             if (dayOfWeek == 6) {
-                addRowWithDivider(row); // 가로줄 추가
+                addRowWithDivider(row);
                 row = new TableRow(this);
                 row.setLayoutParams(new TableLayout.LayoutParams(
                         TableLayout.LayoutParams.MATCH_PARENT,
@@ -218,7 +211,6 @@ public class CalenderActivity extends AppCompatActivity {
             }
         }
 
-        // 마지막 주 빈칸 채우기 및 행 추가
         if (row.getChildCount() > 0) {
             while (row.getChildCount() < 7) {
                 TextView emptyView = new TextView(this);
@@ -227,10 +219,9 @@ public class CalenderActivity extends AppCompatActivity {
                 emptyView.setLayoutParams(new TableRow.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f));
                 row.addView(emptyView);
             }
-            addRowWithDivider(row); // 마지막 행에 가로줄 추가
+            addRowWithDivider(row);
         }
 
-        // 메인 버튼 연결
         ImageButton btnMain = findViewById(R.id.btn_main);
         btnMain.setOnClickListener(new View.OnClickListener() {
             @Override
