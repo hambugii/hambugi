@@ -138,5 +138,7 @@ public class MainActivity extends AppCompatActivity {
         progressAttendance.setProgress(attendanceRate);
         tvPercent.setText(attendanceRate + "%");
         tvWarning.setText("앞으로 " + remainingHours + "시간 결석 시 F");
+
+        //월요일
     }
 }

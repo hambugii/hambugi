@@ -18,6 +18,18 @@ public class DBHelper extends SQLiteOpenHelper {
                         "password TEXT," +
                         "name TEXT)"
         );
+
+        db.execSQL(
+                "CREATE TABLE schedule (" +
+                        "id integer PRIMARY KEY," +
+                        "user TEXT," +
+                        "leture TEXT," +
+                        "professor TEXT," +
+                        "room TEXT," +
+                        "day TEXT," +
+                        "timestart TEXT," +
+                        "timeend TEXT)"
+        );
     }
     @Override
     //DB 버전이 변경될 시 호출됨(기존 테이블 삭제 및 생성)

@@ -18,7 +18,7 @@ public class AddscheduleActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_schedule_add); // ← 파일명 정확히 설정!
+        setContentView(R.layout.activity_schedule_add);
 
         // 뷰 연결
         editCourseName = findViewById(R.id.editCourseName);
@@ -45,24 +45,9 @@ public class AddscheduleActivity extends AppCompatActivity {
 
         // 종료 시간 선택
         textEndTime.setOnClickListener(v -> showTimePicker(false));
-
-        // 확인 버튼 클릭 처리
-        buttonConfirm.setOnClickListener(v -> {
-            String courseName = editCourseName.getText().toString().trim();
-            String professor = editProfessor.getText().toString().trim();
-            String room = editRoom.getText().toString().trim();
-            String day = spinnerDay.getSelectedItem().toString();
-            String startTime = textStartTime.getText().toString();
-            String endTime = textEndTime.getText().toString();
-
-            String message = "강의명: " + courseName + "\n담당교수: " + professor
-                    + "\n강의실: " + room + "\n요일: " + day
-                    + "\n시간: " + startTime + " ~ " + endTime;
-
-            Toast.makeText(AddscheduleActivity.this, message, Toast.LENGTH_LONG).show();
-        });
     }
 
+    //시간 형식
     private void showTimePicker(boolean isStart) {
         int hour = isStart ? startHour : endHour;
         int minute = isStart ? startMinute : endMinute;
