@@ -192,9 +192,20 @@ public class CalenderActivity extends AppCompatActivity {
                     clickedCell.setBackgroundColor(Color.LTGRAY);
                     selectedDateView = clickedCell;
 
-                    // 여기에 날짜 클릭 시 출결 입력 화면으로 이동하는 코드 추가
+                    // 클릭된 날짜 텍스트를 가져옵니다.
+                    String clickedDateText = clickedCell.getText().toString();
+
+                    // 현재 선택된 년도와 월을 가져옵니다.
+                    int selectedYear = Integer.parseInt(yearSpinner.getSelectedItem().toString().replace("년", ""));
+                    int selectedMonth = monthSpinner.getSelectedItemPosition() + 1;
+
+                    // "YYYY-MM-DD" 형식으로 날짜를 만듭니다.
+                    String formattedDate = String.format(Locale.getDefault(), "%04d-%02d-%02d", selectedYear, selectedMonth, Integer.parseInt(clickedDateText));
+
+                    // 출결 입력 화면으로 이동하는 코드 추가
                     Intent intent = new Intent(CalenderActivity.this, AttendCheckActivity.class);
-                    intent.putExtra("selectedDate", dateKey);
+                    intent.putExtra("selectedDate", formattedDate);
+                    intent.putExtra("userId", "defaultUser"); // 🔁 실제 로그인한 사용자 ID로 바꾸세요
                     startActivity(intent);
                 }
             });

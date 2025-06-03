@@ -27,10 +27,10 @@ public class AttendCheckActivity extends AppCompatActivity {
         setContentView(R.layout.activity_attend_check);
 
         dateTextView = findViewById(R.id.dateTextView);
-        backTextView = findViewById(R.id.back);  // 뒤로가기 텍스트뷰 연결
+        backTextView = findViewById(R.id.back);
         Button submitButton = findViewById(R.id.submitButton);
 
-        // 뒤로가기
+        // 뒤로가기 기능
         backTextView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -38,7 +38,7 @@ public class AttendCheckActivity extends AppCompatActivity {
             }
         });
 
-        // 캘린더에서 선택한 날짜 받아오기
+        // 날짜 설정
         selectedDate = getIntent().getStringExtra("selectedDate");
         if (selectedDate != null) {
             String[] dateParts = selectedDate.split("-");
@@ -67,7 +67,7 @@ public class AttendCheckActivity extends AppCompatActivity {
         attendanceSpinners[1][1] = spinner_1_1;
         attendanceSpinners[1][2] = spinner_1_2;
 
-        // 커스텀 어댑터로 텍스트 중앙 정렬
+        // 어댑터 설정
         ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, android.R.layout.simple_spinner_item, statuses) {
             @Override
             public View getView(int position, View convertView, android.view.ViewGroup parent) {
@@ -103,12 +103,53 @@ public class AttendCheckActivity extends AppCompatActivity {
             }
         }
 
-        // 확인 버튼 클릭 시 메시지 표시
-        submitButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Toast.makeText(AttendCheckActivity.this, "출결 저장 완료", Toast.LENGTH_SHORT).show();
+        // 로그인한 유저 아이디 받아오기
+        String tempUserId = getIntent().getStringExtra("userId");
+        if (tempUserId == null) {
+            tempUserId = "defaultUser";
+        }
+        final String userId = tempUserId;
+
+        // 출결 데이터 불러오기
+        if (selectedDate != null) {
+            loadAttendance(userId, selectedDate);
+        }
+
+        submitButton.setOnClickListener(v -> {
+            DBHelper dbHelper = new DBHelper(AttendCheckActivity.this);
+            for (int i = 0; i < 2; i++) {
+                for (int j = 0; j < 3; j++) {
+                    Spinner spinner = attendanceSpinners[i][j];
+                    if (spinner != null) {
+                        String status = spinner.getSelectedItem().toString();
+                        dbHelper.insertOrUpdateAttendance(userId, selectedDate, i, j, status);
+                    }
+                }
             }
+            Toast.makeText(AttendCheckActivity.this, "출결 저장 완료", Toast.LENGTH_SHORT).show();
+            finish();
         });
+    }
+
+    private void loadAttendance(String userId, String date) {
+        DBHelper dbHelper = new DBHelper(this);
+        try (android.database.Cursor cursor = dbHelper.getAttendanceByUserAndDate(userId, date)) {
+            while (cursor.moveToNext()) {
+                int rowNum = cursor.getInt(0);
+                int col = cursor.getInt(1);
+                String status = cursor.getString(2);
+                if (rowNum >= 0 && rowNum < 2 && col >= 0 && col < 3) {
+                    Spinner spinner = attendanceSpinners[rowNum][col];
+                    if (spinner != null) {
+                        for (int i = 0; i < statuses.length; i++) {
+                            if (statuses[i].equals(status)) {
+                                spinner.setSelection(i);
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }

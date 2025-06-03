@@ -1,5 +1,6 @@
 package com.example.hambugi_am;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -10,13 +11,14 @@ import java.util.Date;
 import java.util.Locale;
 
 public class DBHelper extends SQLiteOpenHelper {
+
     public DBHelper(Context context) {
-        super(context, "UserDB.db", null, 3);
+        super(context, "UserDB.db", null, 3); // DB 버전 3
     }
 
     @Override
-    // 유저 테이블
     public void onCreate(SQLiteDatabase db) {
+        // 유저 테이블
         db.execSQL(
                 "CREATE TABLE users (" +
                         "id TEXT PRIMARY KEY," +
@@ -36,25 +38,37 @@ public class DBHelper extends SQLiteOpenHelper {
                 "endTime TEXT NOT NULL," +
                 "semester TEXT NOT NULL)"
         );
+
+        // 출결 테이블
+        db.execSQL("CREATE TABLE IF NOT EXISTS attend (" +
+                "userId TEXT NOT NULL, " +
+                "date TEXT NOT NULL, " +
+                "rowNum INTEGER NOT NULL, " +
+                "col INTEGER NOT NULL, " +
+                "status TEXT NOT NULL, " +
+                "PRIMARY KEY(userId, date, rowNum, col))"
+        );
     }
+
     @Override
-    //DB 버전이 변경될 시 호출됨(기존 테이블 삭제 및 생성)
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS users");
         db.execSQL("DROP TABLE IF EXISTS timetable");
+        db.execSQL("DROP TABLE IF EXISTS attend");
         onCreate(db);
     }
 
-    // 시간표 데이터 삽입 함수
+    // 시간표 데이터 삽입
     public void insertTimetable(String userId, String subject, String professor, String room,
                                 String day, String startTime, String endTime, String semester) {
         SQLiteDatabase db = getWritableDatabase();
-        db.execSQL("INSERT INTO timetable (userId, subject, professor, room, day, startTime, endTime, semester) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        db.execSQL("INSERT INTO timetable (userId, subject, professor, room, day, startTime, endTime, semester) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                 new Object[]{userId, subject, professor, room, day, startTime, endTime, semester});
         db.close();
     }
 
-    // 학기별 시간표 데이터 조회
+    // 학기별 시간표 조회
     public Cursor getTimetableByUserAndSemester(String userId, String semester) {
         SQLiteDatabase db = getReadableDatabase();
         return db.rawQuery("SELECT * FROM timetable WHERE userId = ? AND semester = ?",
@@ -76,7 +90,6 @@ public class DBHelper extends SQLiteOpenHelper {
                 Date existingStart = format.parse(cursor.getString(0));
                 Date existingEnd = format.parse(cursor.getString(1));
 
-                // 시간 겹침 판단
                 if (newStartTime.before(existingEnd) && newEndTime.after(existingStart)) {
                     cursor.close();
                     return true;
@@ -85,6 +98,7 @@ public class DBHelper extends SQLiteOpenHelper {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         cursor.close();
         return false;
     }
@@ -97,5 +111,25 @@ public class DBHelper extends SQLiteOpenHelper {
         db.close();
     }
 
+    // ✅ 출결 데이터 삽입
+    public void insertOrUpdateAttendance(String userId, String date, int rowNum, int col, String status) {
+        SQLiteDatabase db = getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("userId", userId);
+        values.put("date", date);
+        values.put("rowNum", rowNum);
+        values.put("col", col);
+        values.put("status", status);
 
+        // 테이블에 (userId, date, rowNum, col) 복합 키가 있을 경우 insert 또는 update 효과
+        db.insertWithOnConflict("attend", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+        db.close();
+    }
+
+    // 출결 데이터 불러오기
+    public Cursor getAttendanceByUserAndDate(String userId, String date) {
+        SQLiteDatabase db = getReadableDatabase();
+        return db.rawQuery("SELECT rowNum, col, status FROM attend WHERE userId = ? AND date = ?",
+                new String[]{userId, date});
+    }
 }

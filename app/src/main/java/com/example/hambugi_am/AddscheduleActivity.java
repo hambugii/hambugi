@@ -47,7 +47,7 @@ public class AddscheduleActivity extends AppCompatActivity {
         // 시간 목록
         timeList = new ArrayList<>();
         for (int hour = 8; hour <= 18; hour++) {
-            for (int min = 0; min < 60; min += 5) {
+            for (int min = 0; min < 60; min += 10) {
                 if (hour == 18 && min > 0) break;
                 timeList.add(String.format("%02d:%02d", hour, min));
             }
