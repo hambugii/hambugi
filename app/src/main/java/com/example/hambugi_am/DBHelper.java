@@ -111,7 +111,21 @@ public class DBHelper extends SQLiteOpenHelper {
         db.close();
     }
 
-    // ✅ 출결 데이터 삽입
+    // 모든 강의 목록 가져오기
+    public Cursor getAllSubjectsByUserId(String userId) {
+        SQLiteDatabase db = getReadableDatabase();
+        return db.rawQuery("SELECT DISTINCT subject FROM timetable WHERE userId = ?",
+                new String[]{userId});
+    }
+
+    // 특정 요일 강의 목록 가져오기
+    public Cursor getSubjectsByUserIdAndDay(String userId, String day) {
+        SQLiteDatabase db = getReadableDatabase();
+        return db.rawQuery("SELECT DISTINCT subject FROM timetable WHERE userId = ? AND day = ?",
+                new String[]{userId, day});
+    }
+
+    // 출결 데이터 삽입
     public void insertOrUpdateAttendance(String userId, String date, int rowNum, int col, String status) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
@@ -121,7 +135,6 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put("col", col);
         values.put("status", status);
 
-        // 테이블에 (userId, date, rowNum, col) 복합 키가 있을 경우 insert 또는 update 효과
         db.insertWithOnConflict("attend", null, values, SQLiteDatabase.CONFLICT_REPLACE);
         db.close();
     }
@@ -131,5 +144,12 @@ public class DBHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = getReadableDatabase();
         return db.rawQuery("SELECT rowNum, col, status FROM attend WHERE userId = ? AND date = ?",
                 new String[]{userId, date});
+    }
+
+    // 시간순 요일별 강의 목록 조회
+    public Cursor getSubjectsWithTimeByUserAndDay(String userId, String day) {
+        SQLiteDatabase db = getReadableDatabase();
+        return db.rawQuery("SELECT subject, startTime FROM timetable WHERE userId = ? AND day = ? ORDER BY startTime ASC LIMIT 2",
+                new String[]{userId, day});
     }
 }

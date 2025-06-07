@@ -50,16 +50,16 @@
         android:textStyle="bold"
         android:layout_marginBottom="16dp" />
 
-    <!-- 오전 강의  -->
+    <!-- 첫번째 강의  -->
     <TextView
+        android:id="@+id/lecture1TitleTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="C# 프로그래밍"
         android:textSize="16sp"
         android:textStyle="bold"
         android:layout_marginBottom="8dp" />
 
-    <!-- 오전 강의 출결 -->
+    <!-- 강의 출결 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -128,17 +128,17 @@
         </LinearLayout>
     </LinearLayout>
 
-    <!-- 오후 강의 -->
+    <!-- 두번째 강의 -->
     <TextView
+        android:id="@+id/lecture2TitleTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="모바일 프로그래밍"
         android:textSize="16sp"
         android:textStyle="bold"
         android:layout_marginTop="24dp"
         android:layout_marginBottom="8dp" />
 
-    <!-- 오후 강의 출결 -->
+    <!-- 강의 출결 -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
