@@ -13,7 +13,7 @@ import java.util.Locale;
 public class DBHelper extends SQLiteOpenHelper {
 
     public DBHelper(Context context) {
-        super(context, "UserDB.db", null, 4);
+        super(context, "UserDB.db", null, 5);
     }
 
     @Override
@@ -43,16 +43,16 @@ public class DBHelper extends SQLiteOpenHelper {
         db.execSQL("CREATE TABLE IF NOT EXISTS attend (" +
                 "userId TEXT NOT NULL, " +
                 "date TEXT NOT NULL, " +
+                "subject TEXT NOT NULL," +
                 "rowNum INTEGER NOT NULL, " +
                 "col INTEGER NOT NULL, " +
                 "status TEXT NOT NULL, " +
-                "PRIMARY KEY(userId, date, rowNum, col))"
+                "PRIMARY KEY(userId, date, subject, rowNum, col))"
         );
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL("DROP TABLE IF EXISTS users");
         db.execSQL("DROP TABLE IF EXISTS timetable");
         db.execSQL("DROP TABLE IF EXISTS attend");
         onCreate(db);
@@ -106,15 +106,20 @@ public class DBHelper extends SQLiteOpenHelper {
     // 시간표 삭제
     public void deleteTimetable(String userId, String subject, String day, String startTime, String endTime, String semester) {
         SQLiteDatabase db = getWritableDatabase();
+        // 시간표 삭제
         db.execSQL("DELETE FROM timetable WHERE userId = ? AND subject = ? AND day = ? AND startTime = ? AND endTime = ? AND semester = ?",
                 new Object[]{userId, subject, day, startTime, endTime, semester});
+        //출결 삭제
+        db.execSQL("DELETE FROM attend WHERE userId = ? AND subject = ?",
+                new Object[]{userId, subject});
+
         db.close();
     }
 
     // 모든 강의 목록 가져오기
     public Cursor getAllSubjectsByUserId(String userId) {
         SQLiteDatabase db = getReadableDatabase();
-        return db.rawQuery("SELECT DISTINCT subject FROM timetable WHERE userId = ?",
+        return db.rawQuery("SELECT DISTINCT subject FROM timetable WHERE userId = ? ORDER BY startTime ASC",
                 new String[]{userId});
     }
 
@@ -126,11 +131,12 @@ public class DBHelper extends SQLiteOpenHelper {
     }
 
     // 출결 데이터 삽입
-    public void insertOrUpdateAttendance(String userId, String date, int rowNum, int col, String status) {
+    public void insertOrUpdateAttendance(String userId, String date, String subject, int rowNum, int col, String status) {
         SQLiteDatabase db = getWritableDatabase();
         ContentValues values = new ContentValues();
         values.put("userId", userId);
         values.put("date", date);
+        values.put("subject", subject);
         values.put("rowNum", rowNum);
         values.put("col", col);
         values.put("status", status);
@@ -138,18 +144,35 @@ public class DBHelper extends SQLiteOpenHelper {
         db.insertWithOnConflict("attend", null, values, SQLiteDatabase.CONFLICT_REPLACE);
         db.close();
     }
-
-    // 출결 데이터 불러오기
-    public Cursor getAttendanceByUserAndDate(String userId, String date) {
+    // 출결 데이터 불러오기 (과목)
+    public Cursor getAttendanceBySubject(String userId, String subject) {
         SQLiteDatabase db = getReadableDatabase();
-        return db.rawQuery("SELECT rowNum, col, status FROM attend WHERE userId = ? AND date = ?",
-                new String[]{userId, date});
+        return db.rawQuery("SELECT date, rowNum, col, status FROM attend WHERE userId = ? AND subject = ?",
+                new String[]{userId, subject});
     }
 
+    // 출결 데이터 불러오기 (날짜)
+    public Cursor getAttendanceByUserAndDateWithSubject(String userId, String date) {
+        SQLiteDatabase db = getReadableDatabase();
+        return db.rawQuery("SELECT subject, rowNum, col, status FROM attend WHERE userId = ? AND date = ?",
+                new String[]{userId, date});
+    }
+    // 특정 과목 정보 가져오기
+    public Cursor getSubjectInfo(String userId, String subject) {
+        SQLiteDatabase db = getReadableDatabase();
+        return db.rawQuery("SELECT startTime, endTime FROM timetable WHERE userId = ? AND subject = ? LIMIT 1",
+                new String[]{userId, subject});
+    }
     // 시간순 요일별 강의 목록 조회
     public Cursor getSubjectsWithTimeByUserAndDay(String userId, String day) {
         SQLiteDatabase db = getReadableDatabase();
-        return db.rawQuery("SELECT subject, startTime FROM timetable WHERE userId = ? AND day = ? ORDER BY startTime ASC LIMIT 2",
+        return db.rawQuery("SELECT subject, startTime FROM timetable WHERE userId = ? AND day = ? ORDER BY startTime ASC",
                 new String[]{userId, day});
+    }
+    // 삭제하는 강의의 모든 출결 데이터 삭제
+    public void deleteAttendanceBySubject(String userId, String subject) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.execSQL("DELETE FROM attend WHERE userId = ? AND subject = ?", new Object[]{userId, subject});
+        db.close();
     }
 }
