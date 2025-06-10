@@ -13,7 +13,7 @@ import java.util.Locale;
 public class DBHelper extends SQLiteOpenHelper {
 
     public DBHelper(Context context) {
-        super(context, "UserDB.db", null, 3); // DB 버전 3
+        super(context, "UserDB.db", null, 4);
     }
 
     @Override
