@@ -107,69 +107,18 @@
         android:textSize="18sp"
         android:layout_marginTop="16dp"
         android:layout_marginLeft="30dp" />
-
-    <!-- 과목명 -->
-    <TextView
-        android:id="@+id/tv_subject"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="과목명의 출석률"
-        android:textColor="#525252"
-        android:textSize="14sp"
-        android:layout_marginTop="20dp"
-        android:layout_marginLeft="30dp"/>
-
-    <!-- 출석률 바 -->
-    <RelativeLayout
+    <!-- 출석률 컨테이너 -->
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="39dp"
-        android:layout_marginLeft="30dp"
-        android:layout_marginRight="30dp">
+        android:layout_height="150dp"
+        android:layout_marginBottom="20dp">
 
-        <!-- 배경 바 -->
-        <ProgressBar
-            android:id="@+id/progress_bg"
-            style="?android:attr/progressBarStyleHorizontal"
+        <LinearLayout
+            android:id="@+id/attendanceContainer"
             android:layout_width="match_parent"
-            android:layout_height="30dp"
-            android:layout_centerInParent="true"
-            android:max="100"
-            android:progressDrawable="@drawable/progress_attendance_custom" />
-
-        <!-- 실제 출석률 바 -->
-        <ProgressBar
-            android:id="@+id/progress_attendance"
-            style="?android:attr/progressBarStyleHorizontal"
-            android:layout_width="match_parent"
-            android:layout_height="30dp"
-            android:layout_centerInParent="true"
-            android:max="100"
-            android:progress="80"
-            android:progressDrawable="@drawable/progress_attendance_custom" />
-
-        <!-- 왼쪽 문구 -->
-        <TextView
-            android:id="@+id/tv_warning"
-            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"
-            android:paddingStart="15dp"
-            android:text="앞으로 ?시간 결석 시 F"
-            android:textColor="@color/white"
-            android:textSize="12sp" />
-
-        <!-- 오른쪽 퍼센트 -->
-        <TextView
-            android:id="@+id/tv_percent"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentEnd="true"
-            android:layout_centerVertical="true"
-            android:paddingEnd="10dp"
-            android:text="퍼센트"
-            android:textSize="12sp" />
-    </RelativeLayout>
+            android:orientation="vertical"/>
+    </ScrollView>
 
     <!-- 하단 메뉴바 -->
     <LinearLayout

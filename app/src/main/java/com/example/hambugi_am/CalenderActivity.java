@@ -155,12 +155,6 @@ public class CalenderActivity extends AppCompatActivity {
     // 달력 날짜 표시
     private void addDateRows() {
         // 이전 선택 날짜 초기화
-        if (selectedDateView != null) {
-            selectedDateView.setBackgroundColor(Color.TRANSPARENT);
-            selectedDateView.setTextColor(Color.parseColor("#4F7DF9"));
-            selectedDateView = null;
-        }
-
         calendarTable.removeAllViews();
         addWeekDaysRow();
 
@@ -204,23 +198,22 @@ public class CalenderActivity extends AppCompatActivity {
 
             // 요일에 따른 색상 지정
             int dow = (firstDayOfWeek + day - 1) % 7;
-            if (dow == 0) dateView.setTextColor(Color.parseColor("#FF6363"));       // 일요일
-            else if (dow == 6) dateView.setTextColor(Color.parseColor("#678AFF"));  // 토요일
-            else dateView.setTextColor(Color.parseColor("#797979"));                // 평일
+            int defaultTextColor;
+            if (dow == 0) defaultTextColor = Color.parseColor("#FF6363");       // 일요일
+            else if (dow == 6) defaultTextColor = Color.parseColor("#678AFF");  // 토요일
+            else defaultTextColor = Color.parseColor("#797979");               // 평일
+
+            // 출석 상태에 따른 배경 색상 적용
+            DBHelper dbHelper = new DBHelper(this);
+            int attendanceColor = AttendCalculActivity.getDateColor(dbHelper, loggedInUserId, dateKey);
+            if (attendanceColor != 0) {
+                dateView.setBackgroundColor(attendanceColor);
+            } else {
+                dateView.setTextColor(defaultTextColor);
+            }
 
             // 날짜 클릭 시 처리
             dateView.setOnClickListener(v -> {
-                // 이전 선택 제거
-                if (selectedDateView != null) {
-                    selectedDateView.setBackgroundColor(Color.TRANSPARENT);
-                    selectedDateView.setTextColor(Color.parseColor("#4F7DF9"));
-                }
-
-                // 현재 선택 표시
-                dateView.setBackgroundColor(Color.parseColor("#4F7DF9"));
-                dateView.setTextColor(Color.WHITE);
-                selectedDateView = dateView;
-
                 // 날짜 및 요일 추출
                 int y = selectedYear;
                 int m = selectedMonth0Based + 1;
@@ -249,7 +242,7 @@ public class CalenderActivity extends AppCompatActivity {
                 intent.putExtra("dbSelectedDate", dbFormattedDate);
                 intent.putExtra("userId", loggedInUserId);
                 intent.putExtra("selectedDayOfWeek", selectedDayOfWeek);
-                startActivity(intent);
+                startActivityForResult(intent, 1001);
             });
 
             row.addView(dateView);
@@ -274,6 +267,15 @@ public class CalenderActivity extends AppCompatActivity {
                 row.addView(emptyCell);
             }
             addRowWithDivider(row);
+        }
+    }
+
+    //출결 입력 후 캘린더 새로고침
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if(requestCode == 1001 && resultCode == RESULT_OK) {
+            addDateRows();
         }
     }
 }
