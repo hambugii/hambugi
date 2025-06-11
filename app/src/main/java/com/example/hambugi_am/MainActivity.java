@@ -2,6 +2,7 @@ package com.example.hambugi_am;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -158,6 +159,46 @@ public class MainActivity extends AppCompatActivity {
         drawTimetable();
 
         Log.wtf("MainActivity", "=== MainActivity onCreate 완료 ===");
+
+        ImageButton btnAlarm = findViewById(R.id.btn_alarm);
+        SharedPreferences prefs = getSharedPreferences("AlarmPrefs", MODE_PRIVATE);
+        String key = "alarm_toggle";
+        boolean isOn = prefs.getBoolean(key, false);
+        btnAlarm.setImageResource(isOn ? R.drawable.alarm_on : R.drawable.alarm_off);
+
+        btnAlarm.setOnClickListener(v -> {
+            boolean newState = !AlarmHelper.isAlarmEnabled(this);
+            AlarmHelper.setAlarmEnabled(this, newState);
+            btnAlarm.setImageResource(newState ? R.drawable.alarm_on : R.drawable.alarm_off);
+
+            // === 전체 알람 반복 등록/해제 ===
+            SharedPreferences loginPrefs = getSharedPreferences("login_session", MODE_PRIVATE);
+            String userId = loginPrefs.getString("user_id", null);
+            String semester = "2025년 1학기";
+            DBHelper dbHelper = new DBHelper(this);
+            Cursor cursor = dbHelper.getTimetableByUserAndSemester(userId, semester);
+            while (cursor.moveToNext()) {
+                String subject = cursor.getString(cursor.getColumnIndexOrThrow("subject"));
+                String day = cursor.getString(cursor.getColumnIndexOrThrow("day"));
+                String startTime = cursor.getString(cursor.getColumnIndexOrThrow("startTime"));
+                if (newState) {
+                    AlarmHelper.setAlarmIfValid(this, subject, day, startTime, semester);
+                } else {
+                    AlarmHelper.cancelAlarm(this, subject, day, startTime);
+                }
+            }
+            cursor.close();
+        });
+
+
+
+        //권한요청
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+                requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 101);
+            }
+        }
+
     }
 
     //출석률 표시 업데이트
@@ -410,7 +451,7 @@ public class MainActivity extends AppCompatActivity {
         canvas.removeAllViews(); // 기존 내용 초기화
 
         int startHour = 8;
-        int endHour = 19;
+        int endHour = 23;
         int hourHeight = 200;     // 1시간 높이 (px)
         int dayWidth = 200;       // 하루 칸 너비
         int labelWidth = 100;     // 시간 라벨 너비
@@ -571,6 +612,11 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         drawTimetable(); // 화면에 다시 들어올 때마다 시간표 새로 그림
         updateAttendanceDisplay(); // 출석률 업데이트
+
+        ImageButton btnAlarm = findViewById(R.id.btn_alarm);
+        boolean isOn = AlarmHelper.isAlarmEnabled(this);
+        btnAlarm.setImageResource(isOn ? R.drawable.alarm_on : R.drawable.alarm_off);
+
     }
 
 }

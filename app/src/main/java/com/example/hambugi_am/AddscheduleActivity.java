@@ -3,6 +3,7 @@ package com.example.hambugi_am;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
@@ -20,6 +21,9 @@ public class AddscheduleActivity extends AppCompatActivity {
     private Spinner spinnerDay, spinnerStartTime, spinnerEndTime;
     private Button buttonConfirm;
     private List<String> timeList;
+
+    private boolean isEditMode = false;
+    private String originalSubject = "", originalDay = "", originalStartTime = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,9 +50,9 @@ public class AddscheduleActivity extends AppCompatActivity {
 
         // 시간 목록
         timeList = new ArrayList<>();
-        for (int hour = 8; hour <= 18; hour++) {
+        for (int hour = 8; hour <= 23; hour++) {
             for (int min = 0; min < 60; min += 10) {
-                if (hour == 18 && min > 0) break;
+                if (hour == 23 && min > 0) break;
                 timeList.add(String.format("%02d:%02d", hour, min));
             }
         }
@@ -143,7 +147,7 @@ public class AddscheduleActivity extends AppCompatActivity {
 
         // 전달받은 인텐트 확인
         Intent intent = getIntent();
-        boolean isEditMode = intent.getBooleanExtra("from_view", false);
+        isEditMode = intent.getBooleanExtra("from_view", false);
         if (isEditMode) {
             // 전달된 값으로 화면 채우기
             editCourseName.setText(intent.getStringExtra("subject"));
@@ -151,12 +155,14 @@ public class AddscheduleActivity extends AppCompatActivity {
             editProfessor.setText(intent.getStringExtra("professor"));
 
             // 요일 스피너 선택
-            String day = intent.getStringExtra("day");
-            int dayPos = ((ArrayAdapter<String>) spinnerDay.getAdapter()).getPosition(day);
+            originalSubject = intent.getStringExtra("subject");
+            originalDay = intent.getStringExtra("day");
+            originalStartTime = intent.getStringExtra("startTime");
+
+            int dayPos = ((ArrayAdapter<String>) spinnerDay.getAdapter()).getPosition(originalDay);
             spinnerDay.setSelection(dayPos);
 
-            // 시간 스피너 선택
-            int startPos = timeList.indexOf(intent.getStringExtra("startTime"));
+            int startPos = timeList.indexOf(originalStartTime);
             int endPos = timeList.indexOf(intent.getStringExtra("endTime"));
             spinnerStartTime.setSelection(startPos);
             spinnerEndTime.setSelection(endPos);
@@ -177,25 +183,23 @@ public class AddscheduleActivity extends AppCompatActivity {
                             DBHelper db = new DBHelper(AddscheduleActivity.this);
                             db.deleteTimetable(
                                     userId,
-                                    intent.getStringExtra("subject"),
-                                    intent.getStringExtra("day"),
-                                    intent.getStringExtra("startTime"),
+                                    originalSubject,
+                                    originalDay,
+                                    originalStartTime,
                                     intent.getStringExtra("endTime"),
                                     intent.getStringExtra("semester")
                             );
-
+                            AlarmHelper.cancelAlarm(this, originalSubject, originalDay, originalStartTime);
                             Toast.makeText(this, "삭제되었습니다.", Toast.LENGTH_SHORT).show();
-                            finish(); // 현재 화면 닫기 → MainActivity로 돌아감
+                            finish();
                         })
                         .setNegativeButton("취소", null)
                         .show();
             });
         }
 
-
         // 버튼 클릭 시 DB 저장
         buttonConfirm.setOnClickListener(v -> {
-            // SharedPreferences에서 유저 ID 가져오기
             SharedPreferences prefs = getSharedPreferences("login_session", MODE_PRIVATE);
             String userId = prefs.getString("user_id", null);
             if (userId == null) {
@@ -203,14 +207,12 @@ public class AddscheduleActivity extends AppCompatActivity {
                 return;
             }
 
-            // MainActivity에서 전달받은 학기 값 가져오기
             String semester = getIntent().getStringExtra("semester");
             if (semester == null) {
                 Toast.makeText(this, "학기 정보가 없습니다.", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // 입력값 가져오기
             String subject = editCourseName.getText().toString().trim();
             String professor = editProfessor.getText().toString().trim();
             String room = editRoom.getText().toString().trim();
@@ -222,28 +224,19 @@ public class AddscheduleActivity extends AppCompatActivity {
                 Toast.makeText(this, "강의명을 입력해주세요.", Toast.LENGTH_SHORT).show();
                 return;
             }
-
             if (professor.isEmpty()) {
                 Toast.makeText(this, "교수명을 입력해주세요.", Toast.LENGTH_SHORT).show();
                 return;
             }
-
             if (room.isEmpty()) {
                 Toast.makeText(this, "강의실을 입력해주세요.", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // 시간 충돌 감지 및 수정 모드 처리
             DBHelper dbHelper = new DBHelper(this);
             if (isEditMode) {
-                dbHelper.deleteTimetable(
-                        userId,
-                        intent.getStringExtra("subject"),
-                        intent.getStringExtra("day"),
-                        intent.getStringExtra("startTime"),
-                        intent.getStringExtra("endTime"),
-                        intent.getStringExtra("semester")
-                );
+                dbHelper.deleteTimetable(userId, originalSubject, originalDay, originalStartTime, intent.getStringExtra("endTime"), semester);
+                AlarmHelper.cancelAlarm(this, originalSubject, originalDay, originalStartTime);
             } else {
                 if (dbHelper.isTimeConflict(userId, semester, day, startTime, endTime)) {
                     Toast.makeText(this, "해당 시간에 이미 등록된 강의가 있습니다.", Toast.LENGTH_SHORT).show();
@@ -254,7 +247,12 @@ public class AddscheduleActivity extends AppCompatActivity {
             dbHelper.insertTimetable(userId, subject, professor, room, day, startTime, endTime, semester);
             Toast.makeText(this, isEditMode ? "강의가 수정되었습니다." : "강의가 추가되었습니다.", Toast.LENGTH_SHORT).show();
 
-            // 1.5초 후에 메인으로 이동
+            AlarmHelper.setAlarmIfValid(this, subject, day, startTime, semester);
+
+            //조건 검사
+            Log.d("AddscheduleActivity", "알람 조건 검사 시작: subject=" + subject + ", day=" + day + ", time=" + startTime + ", semester=" + semester);
+            AlarmHelper.setAlarmIfValid(this, subject, day, startTime, semester);
+
             new android.os.Handler().postDelayed(() -> {
                 Intent mainIntent = new Intent(AddscheduleActivity.this, MainActivity.class);
                 mainIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);

@@ -3,6 +3,7 @@ package com.example.hambugi_am;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.TypedValue;
@@ -77,6 +78,42 @@ public class CalenderActivity extends AppCompatActivity {
             }
             @Override public void onNothingSelected(android.widget.AdapterView<?> adapterView) {}
         });
+
+        ImageButton btnAlarm = findViewById(R.id.btn_alarm);
+        SharedPreferences prefs = getSharedPreferences("AlarmPrefs", MODE_PRIVATE);
+        String key = "alarm_toggle";
+        boolean isOn = prefs.getBoolean(key, false);
+        btnAlarm.setImageResource(isOn ? R.drawable.alarm_on : R.drawable.alarm_off);
+
+        btnAlarm.setOnClickListener(v -> {
+            boolean newState = !AlarmHelper.isAlarmEnabled(this);
+            AlarmHelper.setAlarmEnabled(this, newState);
+            btnAlarm.setImageResource(newState ? R.drawable.alarm_on : R.drawable.alarm_off);
+
+            // 로그인, 학기 정보
+            SharedPreferences loginPrefs = getSharedPreferences("login_session", MODE_PRIVATE);
+            String userId = loginPrefs.getString("user_id", null);
+
+            // 학기는 2025년 1학기로 고정(아니면 Spinner 등에서 가져오기)
+            String semester = "2025년 1학기";
+
+            DBHelper dbHelper = new DBHelper(this);
+            Cursor cursor = dbHelper.getTimetableByUserAndSemester(userId, semester);
+            while (cursor.moveToNext()) {
+                String subject = cursor.getString(cursor.getColumnIndexOrThrow("subject"));
+                String day = cursor.getString(cursor.getColumnIndexOrThrow("day"));
+                String startTime = cursor.getString(cursor.getColumnIndexOrThrow("startTime"));
+
+                if (newState) {
+                    AlarmHelper.setAlarmIfValid(this, subject, day, startTime, semester);
+                } else {
+                    AlarmHelper.cancelAlarm(this, subject, day, startTime);
+                }
+            }
+            cursor.close();
+        });
+
+
     }
 
     // 년도 및 월 스피너 데이터 설정
