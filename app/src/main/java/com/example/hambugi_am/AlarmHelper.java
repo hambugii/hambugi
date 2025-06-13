@@ -20,20 +20,13 @@ public class AlarmHelper {
     }
 
     private static void setAlarm(Context context, String courseName, String day, String startTime) {
-        Calendar calendar = getAlarmTime(day, startTime);
-        if (calendar == null) return;
+        Calendar earlyCalendar = getAlarmTime(day, startTime, true);  // 5분 전
+        Calendar onTimeCalendar = getAlarmTime(day, startTime, false); // 정시
 
-        Intent intent = new Intent(context, AlarmReceiver.class);
-        intent.putExtra("courseName", courseName);
-
-        int requestCode = (courseName + day + startTime).hashCode();
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                context, requestCode, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+        if (earlyCalendar == null || onTimeCalendar == null) return;
 
         AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
-        // 정확한 알람 권한 체크 (Android 12 이상)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (!manager.canScheduleExactAlarms()) {
                 Toast.makeText(context, "정확한 알람 권한이 필요합니다. 설정 화면으로 이동합니다.", Toast.LENGTH_LONG).show();
@@ -46,18 +39,47 @@ public class AlarmHelper {
             }
         }
 
-        // setExactAndAllowWhileIdle로 예약
+        // 5분 전 알람
+        Intent earlyIntent = new Intent(context, AlarmReceiver.class);
+        earlyIntent.putExtra("courseName", courseName);
+        earlyIntent.putExtra("type", "early");
+
+        PendingIntent earlyPendingIntent = PendingIntent.getBroadcast(
+                context,
+                (courseName + day + startTime + "early").hashCode(),
+                earlyIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+            manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, earlyCalendar.getTimeInMillis(), earlyPendingIntent);
         } else {
-            manager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+            manager.setExact(AlarmManager.RTC_WAKEUP, earlyCalendar.getTimeInMillis(), earlyPendingIntent);
         }
 
-        // 예약 시간 로그 출력
+        // 정시 알람
+        Intent onTimeIntent = new Intent(context, AlarmReceiver.class);
+        onTimeIntent.putExtra("courseName", courseName);
+        onTimeIntent.putExtra("type", "onTime");
+
+        PendingIntent onTimePendingIntent = PendingIntent.getBroadcast(
+                context,
+                (courseName + day + startTime + "onTime").hashCode(),
+                onTimeIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            manager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, onTimeCalendar.getTimeInMillis(), onTimePendingIntent);
+        } else {
+            manager.setExact(AlarmManager.RTC_WAKEUP, onTimeCalendar.getTimeInMillis(), onTimePendingIntent);
+        }
+
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.KOREAN);
-        Log.d("AlarmHelper", "알람 등록됨: " + courseName + ", 요일=" + day + ", 시작=" + startTime +
-                ", 예약시각=" + sdf.format(calendar.getTime()));
+        Log.d("AlarmHelper", "알람 등록됨 (5분 전): " + sdf.format(earlyCalendar.getTime()));
+        Log.d("AlarmHelper", "알람 등록됨 (정시): " + sdf.format(onTimeCalendar.getTime()));
     }
+
 
     public static void cancelAlarm(Context context, String courseName, String day, String startTime) {
         Intent intent = new Intent(context, AlarmReceiver.class);
@@ -79,17 +101,19 @@ public class AlarmHelper {
                 .edit().putBoolean("alarm_toggle", enabled).apply();
     }
 
-    private static Calendar getAlarmTime(String dayKor, String timeStr) {
+    private static Calendar getAlarmTime(String dayKor, String timeStr, boolean isEarly) {
         String[] parts = timeStr.split(":");
         if (parts.length != 2) return null;
 
         int hour = Integer.parseInt(parts[0]);
-        int minute = Integer.parseInt(parts[1]) - 5;
-        if (minute < 0) {
-            hour -= 1;
-            minute += 60;
-            if (hour < 0) {
-                hour = 23;
+        int minute = Integer.parseInt(parts[1]);
+
+        if (isEarly) {
+            minute -= 5;
+            if (minute < 0) {
+                hour -= 1;
+                minute += 60;
+                if (hour < 0) hour = 23;
             }
         }
 
@@ -105,7 +129,6 @@ public class AlarmHelper {
         calendar.set(Calendar.SECOND, 0);
         calendar.set(Calendar.MILLISECOND, 0);
 
-        // 이미 지난 시간이면 다음 주로 미룸
         Calendar now = Calendar.getInstance();
         if (calendar.before(now)) {
             calendar.add(Calendar.DAY_OF_YEAR, 7);
