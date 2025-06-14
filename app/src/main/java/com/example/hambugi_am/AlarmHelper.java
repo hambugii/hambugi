@@ -81,16 +81,22 @@ public class AlarmHelper {
     }
 
 
-    public static void cancelAlarm(Context context, String courseName, String day, String startTime) {
+    public static void cancelAlarm(Context context, String userId, String courseName, String day, String startTime, String semester) {
         Intent intent = new Intent(context, AlarmReceiver.class);
-        int requestCode = (courseName + day + startTime).hashCode();
+        intent.putExtra("courseName", courseName);
+
+        int requestCode = (userId + courseName + day + startTime + semester).hashCode();
         PendingIntent pendingIntent = PendingIntent.getBroadcast(
-                context, requestCode, intent,
-                PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+                context,
+                requestCode,
+                intent,
+                PendingIntent.FLAG_CANCEL_CURRENT | PendingIntent.FLAG_IMMUTABLE
+        );
 
         AlarmManager manager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         manager.cancel(pendingIntent);
     }
+
 
     public static boolean isAlarmEnabled(Context context) {
         return context.getSharedPreferences("AlarmPrefs", Context.MODE_PRIVATE).getBoolean("alarm_toggle", false);

@@ -107,7 +107,7 @@ public class CalenderActivity extends AppCompatActivity {
                 if (newState) {
                     AlarmHelper.setAlarmIfValid(this, subject, day, startTime, semester);
                 } else {
-                    AlarmHelper.cancelAlarm(this, subject, day, startTime);
+                    AlarmHelper.cancelAlarm(this, userId, subject, day, startTime, semester);
                 }
             }
             cursor.close();

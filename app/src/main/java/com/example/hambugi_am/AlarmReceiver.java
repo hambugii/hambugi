@@ -59,4 +59,6 @@ public class AlarmReceiver extends BroadcastReceiver {
 
         Log.d("AlarmReceiver", "알람 수신됨: " + courseName + " / type: " + type);
     }
+
+
 }

@@ -189,7 +189,7 @@ public class AddscheduleActivity extends AppCompatActivity {
                                     intent.getStringExtra("endTime"),
                                     intent.getStringExtra("semester")
                             );
-                            AlarmHelper.cancelAlarm(this, originalSubject, originalDay, originalStartTime);
+                            AlarmHelper.cancelAlarm(this, userId, originalSubject, originalDay, originalStartTime, intent.getStringExtra("semester"));
                             Toast.makeText(this, "삭제되었습니다.", Toast.LENGTH_SHORT).show();
                             finish();
                         })
@@ -236,7 +236,7 @@ public class AddscheduleActivity extends AppCompatActivity {
             DBHelper dbHelper = new DBHelper(this);
             if (isEditMode) {
                 dbHelper.deleteTimetable(userId, originalSubject, originalDay, originalStartTime, intent.getStringExtra("endTime"), semester);
-                AlarmHelper.cancelAlarm(this, originalSubject, originalDay, originalStartTime);
+                AlarmHelper.cancelAlarm(this, userId, originalSubject, originalDay, originalStartTime, semester);
             } else {
                 if (dbHelper.isTimeConflict(userId, semester, day, startTime, endTime)) {
                     Toast.makeText(this, "해당 시간에 이미 등록된 강의가 있습니다.", Toast.LENGTH_SHORT).show();
@@ -249,9 +249,7 @@ public class AddscheduleActivity extends AppCompatActivity {
 
             AlarmHelper.setAlarmIfValid(this, subject, day, startTime, semester);
 
-            //조건 검사
             Log.d("AddscheduleActivity", "알람 조건 검사 시작: subject=" + subject + ", day=" + day + ", time=" + startTime + ", semester=" + semester);
-            AlarmHelper.setAlarmIfValid(this, subject, day, startTime, semester);
 
             new android.os.Handler().postDelayed(() -> {
                 Intent mainIntent = new Intent(AddscheduleActivity.this, MainActivity.class);
