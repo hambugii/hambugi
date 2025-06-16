@@ -29,6 +29,7 @@ public class CalenderActivity extends AppCompatActivity {
 
     private TableLayout calendarTable;
     private Spinner yearSpinner, monthSpinner;
+    private String currentSemester;
     private String[] weekDays = {"일", "월", "화", "수", "목", "금", "토"};
     private TextView selectedDateView = null;
     private String loggedInUserId;
@@ -42,6 +43,15 @@ public class CalenderActivity extends AppCompatActivity {
         calendarTable = findViewById(R.id.calendarTable);
         yearSpinner = findViewById(R.id.yearSpinner);
         monthSpinner = findViewById(R.id.monthSpinner);
+
+        // MainActivity에서 학기 정보 가져오기
+        Intent intent = getIntent();
+        currentSemester = intent.getStringExtra("semester");
+        if(currentSemester == null || currentSemester.isEmpty()) {
+            // MainActivity에서 전달받지 못한 경우 저장된 학기 정보 사용
+            SharedPreferences semesterPrefs = getSharedPreferences("semester_selection", MODE_PRIVATE);
+            currentSemester = semesterPrefs.getString("selected_semester", "2025년 1학기");
+        }
 
         // 스피너 초기화
         setupSpinners();
@@ -60,8 +70,8 @@ public class CalenderActivity extends AppCompatActivity {
         // 메인화면 버튼 클릭 이벤트
         ImageButton btnMain = findViewById(R.id.btn_main);
         btnMain.setOnClickListener(v -> {
-            Intent intent = new Intent(CalenderActivity.this, MainActivity.class);
-            startActivity(intent);
+            Intent intent1 = new Intent(CalenderActivity.this, MainActivity.class);
+            startActivity(intent1);
         });
 
         // 스피너 변경 시 달력 갱신
@@ -94,8 +104,8 @@ public class CalenderActivity extends AppCompatActivity {
             SharedPreferences loginPrefs = getSharedPreferences("login_session", MODE_PRIVATE);
             String userId = loginPrefs.getString("user_id", null);
 
-            // 학기는 2025년 1학기로 고정(아니면 Spinner 등에서 가져오기)
-            String semester = "2025년 1학기";
+            // 학기 가져옴
+            String semester = currentSemester;
 
             DBHelper dbHelper = new DBHelper(this);
             Cursor cursor = dbHelper.getTimetableByUserAndSemester(userId, semester);
@@ -112,8 +122,11 @@ public class CalenderActivity extends AppCompatActivity {
             }
             cursor.close();
         });
+    }
 
-
+    // 학기 반환 메서드
+    private String getSelectedSemester() {
+        return currentSemester;
     }
 
     // 년도 및 월 스피너 데이터 설정
@@ -198,6 +211,7 @@ public class CalenderActivity extends AppCompatActivity {
         // 선택된 년월로 캘린더 설정
         int selectedYear = Integer.parseInt(yearSpinner.getSelectedItem().toString().replace("년", ""));
         int selectedMonth0Based = monthSpinner.getSelectedItemPosition();
+        String selectedSemester = getSelectedSemester();
 
         Calendar calendar = Calendar.getInstance();
         calendar.set(Calendar.YEAR, selectedYear);
@@ -249,7 +263,7 @@ public class CalenderActivity extends AppCompatActivity {
                 dateView.setTextColor(defaultTextColor);
             }
 
-            // 날짜 클릭 시 처리
+            // 모든 날짜에 클릭 리스너 설정
             dateView.setOnClickListener(v -> {
                 // 날짜 및 요일 추출
                 int y = selectedYear;
@@ -273,7 +287,7 @@ public class CalenderActivity extends AppCompatActivity {
                     case Calendar.SATURDAY: selectedDayOfWeek = "토"; break;
                 }
 
-                // 출결 확인 화면으로 이동
+                // 출결 확인 화면으로 이동 (학기 정보는 전달하지 않음 - AttendCheckActivity에서 날짜+요일로 판단)
                 Intent intent = new Intent(CalenderActivity.this, AttendCheckActivity.class);
                 intent.putExtra("selectedDate", displayFormattedDate);
                 intent.putExtra("dbSelectedDate", dbFormattedDate);

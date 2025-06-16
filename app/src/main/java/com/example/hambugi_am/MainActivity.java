@@ -28,6 +28,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
@@ -35,6 +36,21 @@ public class MainActivity extends AppCompatActivity {
     private TextView tvSubject, tvWarning, tvPercent;
     private ProgressBar progressAttendance;
     private LinearLayout attendanceContainer; // 출석률 컨테이너
+
+    private String getCurrentSemester() {
+        Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH) + 1;
+
+        if (month >= 3 && month <= 6) {
+            return year + "년 1학기";
+        } else if (month >= 8 && month <= 12) {
+            return year + "년 2학기";
+        } else {
+            // 1월, 2월, 7월은 방학 기간이므로 null 반환
+            return null;
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,10 +91,18 @@ public class MainActivity extends AppCompatActivity {
         // Spinner에 어댑터 연결
         spinnerSemester.setAdapter(adapter);
 
-        // 2025년 1학기를 기본으로 선택되도록 설정
-        int defaultPosition = adapter.getPosition("2025년 1학기");
-        if (defaultPosition >= 0) {
-            spinnerSemester.setSelection(defaultPosition);
+        // 이전에 선택된 학기 복원 (없으면 2025년 1학기 기본값)
+        SharedPreferences semesterPrefs = getSharedPreferences("semester_selection", MODE_PRIVATE);
+        String savedSemester = semesterPrefs.getString("selected_semester", "2025년 1학기");
+        int savedPosition = adapter.getPosition(savedSemester);
+        if (savedPosition >= 0) {
+            spinnerSemester.setSelection(savedPosition);
+        } else {
+            // 저장된 학기가 없거나 잘못된 경우 기본값 설정
+            int defaultPosition = adapter.getPosition("2025년 1학기");
+            if (defaultPosition >= 0) {
+                spinnerSemester.setSelection(defaultPosition);
+            }
         }
 
         Log.wtf("MainActivity", "스피너 설정 완료");
@@ -90,6 +114,12 @@ public class MainActivity extends AppCompatActivity {
                 Log.wtf("MainActivity", "스피너 선택 이벤트 발생");
                 // 선택된 학기 얻기 (배열에서 position 위치의 값)
                 String selectedSemester = parentView.getItemAtPosition(position).toString();
+                SharedPreferences semesterPrefs = getSharedPreferences("semester_selection", MODE_PRIVATE);
+                SharedPreferences.Editor editor = semesterPrefs.edit();
+                editor.putString("selected_semester", selectedSemester);
+                editor.apply();
+                updateTodayDayText(selectedSemester);
+
                 drawTimetable();
                 updateAttendanceDisplay();
             }
@@ -118,29 +148,16 @@ public class MainActivity extends AppCompatActivity {
         btnCalendar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                String selectedSemester = spinnerSemester.getSelectedItem().toString();
                 Intent intent = new Intent(MainActivity.this, CalenderActivity.class);
+                intent.putExtra("semester", selectedSemester);
                 startActivity(intent);
             }
         });
 
-        TextView tvTodayDay = findViewById(R.id.tv_today_day);
-
-        // 요일 구하기
-        String dayOfWeek = new SimpleDateFormat("EEEE", Locale.KOREAN).format(new Date());
-        String text = "오늘은 " + dayOfWeek + "입니다";
-
-        // Spannable로 요일 색상 설정
-        SpannableString spannable = new SpannableString(text);
-        int start = text.indexOf(dayOfWeek); // 요일 시작 인덱스
-        int end = start + dayOfWeek.length(); // 요일 끝 인덱스
-        spannable.setSpan(
-                new ForegroundColorSpan(Color.parseColor("#0044D7")),
-                start, end,
-                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
-        );
-
-        // 요일 TextView에 적용
-        tvTodayDay.setText(spannable);
+        // 초기 요일 텍스트 설정
+        String initialSemester = spinnerSemester.getSelectedItem().toString();
+        updateTodayDayText(initialSemester);
 
         // 출석률 컨테이너 초기화
         attendanceContainer = findViewById(R.id.attendanceContainer);
@@ -154,7 +171,6 @@ public class MainActivity extends AppCompatActivity {
         Log.wtf("MainActivity", "updateAttendanceDisplay 호출 전");
 
         updateAttendanceDisplay();
-
         //시간표 코드 호출
         drawTimetable();
 
@@ -174,7 +190,7 @@ public class MainActivity extends AppCompatActivity {
             // === 전체 알람 반복 등록/해제 ===
             SharedPreferences loginPrefs = getSharedPreferences("login_session", MODE_PRIVATE);
             String userId = loginPrefs.getString("user_id", null);
-            String semester = "2025년 1학기";
+            String semester = spinnerSemester.getSelectedItem().toString();
             DBHelper dbHelper = new DBHelper(this);
             Cursor cursor = dbHelper.getTimetableByUserAndSemester(userId, semester);
             while (cursor.moveToNext()) {
@@ -190,21 +206,50 @@ public class MainActivity extends AppCompatActivity {
             cursor.close();
         });
 
-
-
         //권한요청
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             if (checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, 101);
             }
         }
+    }
 
+    // 선택된 학기에 따라 요일 텍스트를 업데이트하는 메서드
+    private void updateTodayDayText(String selectedSemester) {
+        TextView tvTodayDay = findViewById(R.id.tv_today_day);
+        String currentSemester = getCurrentSemester();
+
+        String text;
+        if (currentSemester != null && selectedSemester.equals(currentSemester)) {
+            // 현재 학기인 경우 오늘 요일 표시
+            String dayOfWeek = new SimpleDateFormat("EEEE", Locale.KOREAN).format(new Date());
+            text = "오늘은 " + dayOfWeek + "입니다";
+
+            SpannableString spannable = new SpannableString(text);
+            int start = text.indexOf(dayOfWeek);
+            int end = start + dayOfWeek.length();
+            spannable.setSpan(
+                    new ForegroundColorSpan(Color.parseColor("#0044D7")),
+                    start, end,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            );
+            tvTodayDay.setText(spannable);
+        } else {
+            // 다른 학기이거나 방학 기간인 경우 학기명 표시
+            text = selectedSemester;
+            SpannableString spannable = new SpannableString(text);
+            spannable.setSpan(
+                    new ForegroundColorSpan(Color.parseColor("#0044D7")),
+                    0, text.length(),
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+            );
+            tvTodayDay.setText(spannable);
+        }
     }
 
     //출석률 표시 업데이트
     private void updateAttendanceDisplay() {
         Log.wtf("MainActivity", "=== updateAttendanceDisplay 시작 ===");
-        System.out.println("=== updateAttendanceDisplay 시작 ===");
 
         try {
             SharedPreferences prefs = getSharedPreferences("login_session", MODE_PRIVATE);
@@ -233,106 +278,97 @@ public class MainActivity extends AppCompatActivity {
             DBHelper dbHelper = new DBHelper(this);
             attendanceContainer.removeAllViews(); //기존 뷰 제거
 
-            // 오늘 요일 구하기
-            String todayDayOfWeek = new SimpleDateFormat("EEEE", Locale.KOREAN).format(new Date());
-            String todayDayWithSuffix = todayDayOfWeek;
-
-            // 요일이 이미 "요일"로 끝나는지 확인하고, 아니면 "요일"을 붙임
-            if (!todayDayOfWeek.endsWith("요일")) {
-                todayDayWithSuffix = todayDayOfWeek + "요일";
-            }
-
-            Log.wtf("MainActivity", "오늘 요일: " + todayDayWithSuffix);
-
-            // 먼저 데이터베이스에 시간표 데이터가 있는지 확인
+            // 선택된 학기 가져오기
             Spinner spinnerSemester = findViewById(R.id.spinner_semester);
-            String semester = spinnerSemester.getSelectedItem().toString();
+            String selectedSemester = spinnerSemester.getSelectedItem().toString();
+            String currentSemester = getCurrentSemester();
 
-            Log.wtf("MainActivity", "선택된 학기: " + semester);
+            Log.wtf("MainActivity", "선택된 학기: " + selectedSemester);
+            Log.wtf("MainActivity", "현재 학기: " + currentSemester);
 
-            // 데이터베이스 연결 확인
-            try {
-                Cursor timetableCursor = dbHelper.getTimetableByUserAndSemester(userId, semester);
-                int timetableCount = timetableCursor != null ? timetableCursor.getCount() : 0;
+            if (currentSemester != null && selectedSemester.equals(currentSemester)) {
+                // 현재 학기인 경우 - 오늘 요일 강의만 표시
+                String todayDayOfWeek = new SimpleDateFormat("EEEE", Locale.KOREAN).format(new Date());
+                String todayDayWithSuffix = todayDayOfWeek;
 
-                Log.wtf("MainActivity", "전체 시간표 개수: " + timetableCount);
-
-                if (timetableCursor != null) {
-                    int index = 0;
-                    while (timetableCursor.moveToNext()) {
-                        String subject = timetableCursor.getString(timetableCursor.getColumnIndexOrThrow("subject"));
-                        String day = timetableCursor.getString(timetableCursor.getColumnIndexOrThrow("day"));
-                        String startTime = timetableCursor.getString(timetableCursor.getColumnIndexOrThrow("startTime"));
-                        String endTime = timetableCursor.getString(timetableCursor.getColumnIndexOrThrow("endTime"));
-                        Log.wtf("MainActivity", "시간표[" + index + "] - 과목: " + subject + ", 요일: " + day + ", 시간: " + startTime + "~" + endTime);
-                        index++;
-                    }
-                    timetableCursor.close();
-                } else {
-                    Log.wtf("MainActivity", "timetableCursor가 null입니다!");
+                if (!todayDayOfWeek.endsWith("요일")) {
+                    todayDayWithSuffix = todayDayOfWeek + "요일";
                 }
-            } catch (Exception e) {
-                Log.wtf("MainActivity", "시간표 조회 중 오류", e);
-            }
 
-            // 모든 강의 목록 확인
-            try {
-                Cursor allSubjectsCursor = dbHelper.getAllSubjectsByUserId(userId);
-                int allSubjectsCount = allSubjectsCursor != null ? allSubjectsCursor.getCount() : 0;
+                Log.wtf("MainActivity", "오늘 요일: " + todayDayWithSuffix);
 
-                Log.wtf("MainActivity", "전체 강의 개수: " + allSubjectsCount);
+                try {
+                    Cursor subjectCursor = dbHelper.getSubjectByDaySemester(userId, todayDayWithSuffix, selectedSemester);
+                    int todaySubjectsCount = subjectCursor != null ? subjectCursor.getCount() : 0;
 
-                if (allSubjectsCursor != null) {
-                    int index = 0;
-                    while (allSubjectsCursor.moveToNext()) {
-                        String subject = allSubjectsCursor.getString(0);
-                        Log.wtf("MainActivity", "전체 강의[" + index + "]: " + subject);
-                        index++;
-                    }
-                    allSubjectsCursor.close();
-                } else {
-                    Log.wtf("MainActivity", "allSubjectsCursor가 null입니다!");
-                }
-            } catch (Exception e) {
-                Log.wtf("MainActivity", "전체 강의 조회 중 오류", e);
-            }
+                    Log.wtf("MainActivity", "오늘 강의 개수: " + todaySubjectsCount);
 
-            // 오늘 요일에 해당하는 강의만 가져오기
-            try {
-                Cursor subjectCursor = dbHelper.getSubjectsByUserIdAndDay(userId, todayDayWithSuffix);
-                int todaySubjectsCount = subjectCursor != null ? subjectCursor.getCount() : 0;
+                    if (subjectCursor != null && subjectCursor.getCount() > 0) {
+                        int index = 0;
+                        while (subjectCursor.moveToNext()) {
+                            String subject = subjectCursor.getString(0);
+                            Log.wtf("MainActivity", "오늘 강의[" + index + "]: " + subject);
 
-                Log.wtf("MainActivity", "오늘 강의 개수: " + todaySubjectsCount);
+                            try {
+                                AttendCalculActivity.AttendanceResult result =
+                                        AttendCalculActivity.calculateAttendance(dbHelper, userId, subject);
+                                Log.wtf("MainActivity", "출석률 계산 완료 - " + subject + ": " + result.attendanceRate + "%");
 
-                if (subjectCursor != null && subjectCursor.getCount() > 0) {
-                    int index = 0;
-                    while (subjectCursor.moveToNext()) {
-                        String subject = subjectCursor.getString(0);
-                        Log.wtf("MainActivity", "오늘 강의[" + index + "]: " + subject);
-
-                        // 출석률 계산
-                        try {
-                            AttendCalculActivity.AttendanceResult result =
-                                    AttendCalculActivity.calculateAttendance(dbHelper, userId, subject);
-                            Log.wtf("MainActivity", "출석률 계산 완료 - " + subject + ": " + result.attendanceRate + "%");
-
-                            // 과목별 출석률 UI 생성
-                            createAttendanceUI(result);
-                        } catch (Exception e) {
-                            Log.wtf("MainActivity", "출석률 계산 중 오류 - " + subject, e);
+                                createAttendanceUI(result);
+                            } catch (Exception e) {
+                                Log.wtf("MainActivity", "출석률 계산 중 오류 - " + subject, e);
+                            }
+                            index++;
                         }
-                        index++;
-                    }
-                    subjectCursor.close();
-                } else {
-                    Log.wtf("MainActivity", "오늘 강의가 없음");
-                    createNoTodaySubjectUI();
-                    if (subjectCursor != null) {
                         subjectCursor.close();
+                    } else {
+                        Log.wtf("MainActivity", "오늘 강의가 없음");
+                        createNoTodaySubjectUI();
+                        if (subjectCursor != null) {
+                            subjectCursor.close();
+                        }
                     }
+                } catch (Exception e) {
+                    Log.wtf("MainActivity", "오늘 강의 조회 중 오류", e);
                 }
-            } catch (Exception e) {
-                Log.wtf("MainActivity", "오늘 강의 조회 중 오류", e);
+            } else {
+                // 다른 학기이거나 방학 기간인 경우 - 해당 학기의 모든 강의 표시
+                Log.wtf("MainActivity", "다른 학기 선택됨 - 모든 강의 표시");
+
+                try {
+                    Cursor allSubjectsCursor = dbHelper.getSubjectByUserIdSemester(userId, selectedSemester);
+                    int allSubjectsCount = allSubjectsCursor != null ? allSubjectsCursor.getCount() : 0;
+
+                    Log.wtf("MainActivity", "선택된 학기 전체 강의 개수: " + allSubjectsCount);
+
+                    if (allSubjectsCursor != null && allSubjectsCursor.getCount() > 0) {
+                        int index = 0;
+                        while (allSubjectsCursor.moveToNext()) {
+                            String subject = allSubjectsCursor.getString(0);
+                            Log.wtf("MainActivity", "학기 강의[" + index + "]: " + subject);
+
+                            try {
+                                AttendCalculActivity.AttendanceResult result =
+                                        AttendCalculActivity.calculateAttendance(dbHelper, userId, subject);
+                                Log.wtf("MainActivity", "출석률 계산 완료 - " + subject + ": " + result.attendanceRate + "%");
+
+                                createAttendanceUI(result);
+                            } catch (Exception e) {
+                                Log.wtf("MainActivity", "출석률 계산 중 오류 - " + subject, e);
+                            }
+                            index++;
+                        }
+                        allSubjectsCursor.close();
+                    } else {
+                        Log.wtf("MainActivity", "선택된 학기에 강의가 없음");
+                        createNoSemesterSubjectUI(selectedSemester);
+                        if (allSubjectsCursor != null) {
+                            allSubjectsCursor.close();
+                        }
+                    }
+                } catch (Exception e) {
+                    Log.wtf("MainActivity", "선택된 학기 강의 조회 중 오류", e);
+                }
             }
 
         } catch (Exception e) {
@@ -382,7 +418,9 @@ public class MainActivity extends AppCompatActivity {
         //출석률 바
         ProgressBar progressAttendance = new ProgressBar(this, null, android.R.attr.progressBarStyleHorizontal);
         progressAttendance.setMax(100);
-        progressAttendance.setProgress((int) result.attendanceRate);
+        // F학점 확정 시 0%로 표시, 아니면 실제 출석률 표시
+        int displayRate = result.isF ? 0 : (int) result.attendanceRate;
+        progressAttendance.setProgress(displayRate);
         progressAttendance.setProgressDrawable(ContextCompat.getDrawable(this, R.drawable.progress_attendance_custom));
         RelativeLayout.LayoutParams progressParams = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.MATCH_PARENT,
@@ -414,7 +452,9 @@ public class MainActivity extends AppCompatActivity {
 
         //퍼센트
         TextView tvPercent = new TextView(this);
-        tvPercent.setText((int) result.attendanceRate + "%");
+        // F학점 확정 시 0%로 표시, 아니면 실제 출석률 표시
+        String percentText = result.isF ? "0%" : ((int) result.attendanceRate + "%");
+        tvPercent.setText(percentText);
         tvPercent.setTextSize(12);
         RelativeLayout.LayoutParams percentParams = new RelativeLayout.LayoutParams(
                 RelativeLayout.LayoutParams.WRAP_CONTENT,
@@ -446,6 +486,23 @@ public class MainActivity extends AppCompatActivity {
         attendanceContainer.addView(tvNoSubject);
     }
 
+    // 선택된 학기에 강의가 없을 때 UI
+    private void createNoSemesterSubjectUI(String semester) {
+        TextView noSubjectText = new TextView(this);
+        noSubjectText.setText("등록된 강의가 없습니다.");
+        noSubjectText.setTextColor(Color.parseColor("#525252"));
+        noSubjectText.setTextSize(14);
+        noSubjectText.setGravity(Gravity.CENTER);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+        );
+        params.setMargins(30,20,30,20);
+        noSubjectText.setLayoutParams(params);
+        attendanceContainer.addView(noSubjectText);
+    }
+
+    // 시간표 그리기
     private void drawTimetable() {
         RelativeLayout canvas = findViewById(R.id.timetableCanvas);
         canvas.removeAllViews(); // 기존 내용 초기화

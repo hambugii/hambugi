@@ -28,7 +28,47 @@ public class AttendCheckActivity extends AppCompatActivity {
     private List<String> lectureSubjects = new ArrayList<>();
     private List<Spinner[]> attendanceSpinners = new ArrayList<>();
     private List<Integer> lectureHours = new ArrayList<>();
-    private String displayDate, dbDate, userId, selectedDayOfWeek;
+    private String displayDate, dbDate, userId, selectedDayOfWeek, semester;
+
+    // 날짜와 요일을 기반으로 실제 강의가 있는 학기를 찾아서 반환
+    private String findSemesterWithLectures(String dateStr, String dayOfWeek) {
+        try {
+            String[] dateParts = dateStr.split("-");
+            int year = Integer.parseInt(dateParts[0]);
+
+            DBHelper dbHelper = new DBHelper(this);
+            String dayWithSuffix = dayOfWeek + "요일";
+
+            // 가능한 학기들을 체크
+            String[] possibleSemesters = {
+                    year + "년 1학기",
+                    year + "년 2학기"
+            };
+
+            for (String testSemester : possibleSemesters) {
+                // 1. 날짜가 해당 학기 기간 내에 있는지 확인
+                if (SemesterUtils.isDateInSemester(dateStr, testSemester)) {
+                    // 2. 해당 학기에 실제 강의가 있는지 확인
+                    Cursor cursor = dbHelper.getSubjectByDaySemester(userId, dayWithSuffix, testSemester);
+                    if (cursor != null && cursor.getCount() > 0) {
+                        Log.d(TAG, "Found lectures in " + testSemester + " for " + dayWithSuffix + " on " + dateStr);
+                        cursor.close();
+                        return testSemester;
+                    }
+                    if (cursor != null) {
+                        cursor.close();
+                    }
+                }
+            }
+
+            Log.d(TAG, "No lectures found for " + dayWithSuffix + " on " + dateStr + " (outside semester periods or no lectures)");
+            return null;
+
+        } catch (Exception e) {
+            Log.e(TAG, "Error finding semester with lectures: " + dateStr, e);
+            return null;
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,11 +89,13 @@ public class AttendCheckActivity extends AppCompatActivity {
             dbDate = intent.getStringExtra("dbSelectedDate");
             selectedDayOfWeek = intent.getStringExtra("selectedDayOfWeek");
             userId = intent.getStringExtra("userId");
+            semester = findSemesterWithLectures(dbDate, selectedDayOfWeek);
 
             Log.d(TAG, "Intent data - displayDate: " + displayDate);
             Log.d(TAG, "Intent data - dbDate: " + dbDate);
             Log.d(TAG, "Intent data - selectedDayOfWeek: " + selectedDayOfWeek);
             Log.d(TAG, "Intent data - userId: " + userId);
+            Log.d(TAG, "Intent data - semester: " + semester);
 
             if (displayDate != null) {
                 dateTextView.setText(displayDate);
@@ -66,11 +108,33 @@ public class AttendCheckActivity extends AppCompatActivity {
             Toast.makeText(this, "사용자 정보를 불러올 수 없습니다. 기본 사용자로 진행합니다.", Toast.LENGTH_LONG).show();
         }
 
+        // 학기 정보가 null인 경우 강의 없음 처리
+        if (semester == null) {
+            selectedDayOfWeek += "요일";
+
+            // 강의 없음 메시지 직접 표시
+            TextView noLecture = new TextView(this);
+            noLecture.setText("해당 날짜에 등록된 강의가 없습니다.");
+            noLecture.setTextSize(16);
+            noLecture.setGravity(android.view.Gravity.CENTER);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+            );
+            params.setMargins(16,32,16,32);
+            noLecture.setLayoutParams(params);
+            mainContainer.addView(noLecture);
+
+            // 뒤로가기 클릭 → 이전 화면으로
+            backTextView.setOnClickListener(v -> finish());
+            return;
+        }
+
         // 요일별 강의 제목 로딩
         if (selectedDayOfWeek != null) {
             selectedDayOfWeek += "요일";
             Log.d(TAG, "Final selectedDayOfWeek: " + selectedDayOfWeek);
-            loadLectureTitlesByDay(userId, selectedDayOfWeek);
+            loadLectureTitlesByDay(userId, selectedDayOfWeek, semester);
             // 저장된 출결 상태 불러오기
             loadAttendance(userId, dbDate);
         }
@@ -216,12 +280,11 @@ public class AttendCheckActivity extends AppCompatActivity {
             mainContainer.addView(errorText);
         }
     }
-    ///////////////////////////////// 수정 끝
 
     // 요일별 강의 목록 로딩
-    private void loadLectureTitlesByDay(String userId, String day) {
+    private void loadLectureTitlesByDay(String userId, String day, String semester) {
         Log.d(TAG, "=== loadLectureTitlesByDay START ===");
-        Log.d(TAG, "userId: " + userId + ", day: " + day);
+        Log.d(TAG, "userId: " + userId + ", day: " + day + ", semester: " + semester);
 
         DBHelper dbHelper = null;
         Cursor cursor = null;
@@ -245,7 +308,7 @@ public class AttendCheckActivity extends AppCompatActivity {
 
             // 쿼리 실행
             Log.d(TAG, "Executing database query...");
-            cursor = dbHelper.getSubjectsWithTimeByUserAndDay(userId, day);
+            cursor = dbHelper.getSubjectsWithTimeByUserAndDay(userId, day, semester);
             Log.d(TAG, "Query executed. Cursor is " + (cursor != null ? "not null" : "null"));
 
             if (cursor != null) {
@@ -285,6 +348,9 @@ public class AttendCheckActivity extends AppCompatActivity {
                     //강의 있을 때만 확인 버튼 표시
                     if(lectureIndex > 0) {
                         createSubmitButton();
+                        Log.d(TAG, "Submit button created because lectures exist");
+                    } else {
+                        Log.d(TAG, "No submit button created - no lectures found");
                     }
                 } else {
                     Log.d(TAG, "No lectures found for the day");
@@ -300,6 +366,9 @@ public class AttendCheckActivity extends AppCompatActivity {
                     params.setMargins(16,32,16,32);
                     noLecture.setLayoutParams(params);
                     mainContainer.addView(noLecture);
+
+                    // 강의가 없으면 확인 버튼 표시 X
+                    Log.d(TAG, "No submit button created - no lectures gor this day");
                 }
 
             } else {
@@ -327,8 +396,8 @@ public class AttendCheckActivity extends AppCompatActivity {
             errorText.setLayoutParams(params);
             mainContainer.addView(errorText);
 
-            // 오류가 발생해도 확인 버튼은 표시
-            createSubmitButton();
+            // 오류가 발생해도 확인 버튼은 표시 X
+            Log.d(TAG, "No submit button created due to error");
 
             // 사용자에게 알림
             Toast.makeText(this, "강의 정보 로딩 실패: " + e.getMessage(), Toast.LENGTH_LONG).show();

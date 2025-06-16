@@ -124,7 +124,7 @@ public class DBHelper extends SQLiteOpenHelper {
         }
     }
 
-    // 모든 강의 과목 목록 가져오기 (서브쿼리로 정렬 안정성 개선)
+    // 모든 강의 과목 목록 가져오기
     public Cursor getAllSubjectsByUserId(String userId) {
         SQLiteDatabase db = getReadableDatabase();
         return db.rawQuery(
@@ -135,11 +135,43 @@ public class DBHelper extends SQLiteOpenHelper {
                 new String[]{userId});
     }
 
+    // 모든 강의 목록 가져오기 (학기 필터링)
+    public Cursor getSubjectByUserIdSemester(String userId, String semester) {
+        SQLiteDatabase db = getReadableDatabase();
+        return db.rawQuery(
+                "SELECT subject FROM (" +
+                        "SELECT subject, MIN(startTime) AS minTime " +
+                        "FROM timetable WHERE userId = ? AND semester = ? GROUP BY subject" +
+                        ") ORDER BY minTime ASC",
+                new String[]{userId, semester});
+    }
+
     // 특정 요일에 등록된 과목들 가져오기
     public Cursor getSubjectsByUserIdAndDay(String userId, String day) {
         SQLiteDatabase db = getReadableDatabase();
         return db.rawQuery("SELECT DISTINCT subject FROM timetable WHERE userId = ? AND day = ?",
                 new String[]{userId, day});
+    }
+
+    // 특정 요일에 등록된 과목들 가져오기 (학기 필터링)
+    public Cursor getSubjectByDaySemester(String userId, String day, String semester) {
+        SQLiteDatabase db = getReadableDatabase();
+        return db.rawQuery("SELECT DISTINCT subject FROM timetable WHERE userId = ? AND day = ? AND semester = ?",
+                new String[]{userId, day, semester});
+    }
+
+    // 요일별 과목 + 시작 시간 정렬해서 가져오기
+    public Cursor getSubjectsWithTimeByUserAndDay(String userId, String day) {
+        SQLiteDatabase db = getReadableDatabase();
+        return db.rawQuery("SELECT subject, startTime FROM timetable WHERE userId = ? AND day = ? ORDER BY startTime ASC",
+                new String[]{userId, day});
+    }
+
+    // 요일별 과목 + 시작 시간 정렬 (학기 필터링)
+    public Cursor getSubjectsWithTimeByUserAndDay(String userId, String day, String semester) {
+        SQLiteDatabase db = getReadableDatabase();
+        return db.rawQuery("SELECT subject, startTime FROM timetable WHERE userId = ? AND day = ? AND semester = ? " +
+                "ORDER BY startTime ASC", new String[]{userId, day, semester});
     }
 
     // 출결 저장 및 수정 (중복 시 덮어씀)
@@ -176,13 +208,6 @@ public class DBHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = getReadableDatabase();
         return db.rawQuery("SELECT startTime, endTime FROM timetable WHERE userId = ? AND subject = ? LIMIT 1",
                 new String[]{userId, subject});
-    }
-
-    // 요일별 과목 + 시작 시간 정렬해서 가져오기
-    public Cursor getSubjectsWithTimeByUserAndDay(String userId, String day) {
-        SQLiteDatabase db = getReadableDatabase();
-        return db.rawQuery("SELECT subject, startTime FROM timetable WHERE userId = ? AND day = ? ORDER BY startTime ASC",
-                new String[]{userId, day});
     }
 
     // 과목 삭제 시 출결 정보도 같이 삭제 (내부 호출 전용 버전)
