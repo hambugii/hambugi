@@ -2,7 +2,7 @@
 
 > 대학생의 시간표·출결 관리를 한 곳에서 돕는 Android 애플리케이션
 
-<img width="550" height="1100" alt="image04" src="https://github.com/user-attachments/assets/ac29dca0-fbba-4ed8-9651-19f6738471ae" />
+<img width="400" height="850" alt="image04" src="https://github.com/user-attachments/assets/ac29dca0-fbba-4ed8-9651-19f6738471ae" />
 
 ## 프로젝트 소개
 
@@ -25,8 +25,8 @@
 - 아이디 중복 확인 및 로컬 사용자 정보 저장
 - `SharedPreferences`를 활용한 로그인 세션 유지와 로그아웃 처리
 
-<img width="1080" height="2400" alt="image01" src="https://github.com/user-attachments/assets/999628bb-1136-4247-b157-b04f945e6d3f" />
-<img width="1080" height="2400" alt="image02" src="https://github.com/user-attachments/assets/5afb3457-5d78-47b7-82af-a7840f26e853" />
+<img width="400" height="850" alt="image01" src="https://github.com/user-attachments/assets/999628bb-1136-4247-b157-b04f945e6d3f" />
+<img width="400" height="850" alt="image02" src="https://github.com/user-attachments/assets/5afb3457-5d78-47b7-82af-a7840f26e853" />
 
 
 ### 2. 학기별 시간표 관리
@@ -36,7 +36,7 @@
 - 등록된 강의 수정 및 삭제 지원
 - 같은 요일의 시간대가 겹치는 강의를 사전에 검증
 
-<img width="1080" height="2400" alt="image05" src="https://github.com/user-attachments/assets/8e016502-c4f7-4891-afae-56d46810a36d" />
+<img width="400" height="850" alt="image05" src="https://github.com/user-attachments/assets/8e016502-c4f7-4891-afae-56d46810a36d" />
 
 ### 3. 출결 기록 및 출석률 확인
 
@@ -45,7 +45,7 @@
 - 과목별 출석률을 계산해 메인 화면에서 진행 바로 제공
 - 현재 학기에는 당일 수업 중심으로, 다른 학기에는 해당 학기의 전체 과목 현황을 표시
 
-<img width="1080" height="2400" alt="image06" src="https://github.com/user-attachments/assets/a8b0e0eb-1364-4e76-8ce6-32a048a00eb3" />
+<img width="400" height="850" alt="image06" src="https://github.com/user-attachments/assets/a8b0e0eb-1364-4e76-8ce6-32a048a00eb3" />
 
 ### 4. 캘린더 기반 출결 조회
 
@@ -53,7 +53,7 @@
 - 날짜를 선택해 해당 일자의 출결 입력 화면으로 이동
 - 출결 상태에 따라 캘린더 날짜에 시각적 상태를 표시
 
-<img width="1080" height="2400" alt="image07" src="https://github.com/user-attachments/assets/e496e7b9-e138-4f91-a16c-62d70e19d8c7" />
+<img width="400" height="850" alt="image07" src="https://github.com/user-attachments/assets/e496e7b9-e138-4f91-a16c-62d70e19d8c7" />
 
 ### 5. 수업 알림
 
