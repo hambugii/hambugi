@@ -2,7 +2,7 @@
 
 > 대학생의 시간표·출결 관리를 한 곳에서 돕는 Android 애플리케이션
 
-<img width="1080" height="2400" alt="image04" src="https://github.com/user-attachments/assets/ac29dca0-fbba-4ed8-9651-19f6738471ae" />
+<img width="550" height="1100" alt="image04" src="https://github.com/user-attachments/assets/ac29dca0-fbba-4ed8-9651-19f6738471ae" />
 
 ## 프로젝트 소개
 
