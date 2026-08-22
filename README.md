@@ -61,7 +61,7 @@
 - Android 알림 권한 및 정확한 알람 권한 처리
 - 알림 토글로 학기 내 등록 수업의 알림을 일괄 설정·해제
 
-<img width="320" height="96" alt="스크린샷 2026-08-22 202050" src="https://github.com/user-attachments/assets/7b15c3e6-8926-421f-ae50-f6bdc616627b" />
+<img width="320" height="98" alt="스크린샷 2026-08-22 202050" src="https://github.com/user-attachments/assets/7b15c3e6-8926-421f-ae50-f6bdc616627b" />
 <img width="322" height="98" alt="스크린샷 2026-08-22 202122" src="https://github.com/user-attachments/assets/c539dad4-33fe-4d24-aa3b-9707086a16ee" />
 
 
